@@ -1,7 +1,7 @@
 <?php
 /*PhpDoc:
 name:  coordsys.inc.php
-title: coordsys.inc.php (v2) - changement simpple de système de projection
+title: coordsys.inc.php (v2) - changement simple de système de projection
 classes:
 functions:
 doc: |

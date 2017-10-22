@@ -1,4 +1,4 @@
-title: geometry - gestion des primtives géométriques GeoJSON / WKT
+title: geometry - gestion des primtives géométriques GeoJSON / WKT, remplace geom2d
 path: /geometry
 doc: |
   Définition des primitives géométriques fondées sur OGC:WKT et GeoJSON
@@ -10,6 +10,7 @@ htmlFiles:
 phpScripts:
 phpIncludes:
   - /geometry/geometry.inc.php
+  - /geometry/coordsys.inc.php
   - /geometry/point.inc.php
   - /geometry/bbox.inc.php
   - /geometry/linestring.inc.php
@@ -17,3 +18,5 @@ phpIncludes:
   - /geometry/multigeom.inc.php
   - /geometry/multipoint.inc.php
   - /geometry/multilinestring.inc.php
+  - /geometry/multipolygon.inc.php
+  - /geometry/geomcoll.inc.php

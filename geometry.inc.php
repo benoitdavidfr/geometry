@@ -1,7 +1,7 @@
 <?php
 /*PhpDoc:
 name:  geometry.inc.php
-title: geometry.inc.php - définition abstraite d'une géométrie WKT/GeoJSON
+title: geometry.inc.php - définition abstraite d'une géométrie WKT/GeoJSON, remplace geom2d
 functions:
 classes:
 doc: |

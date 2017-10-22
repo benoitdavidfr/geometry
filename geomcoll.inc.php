@@ -2,7 +2,7 @@
 /*PhpDoc:
 name:  geomcoll.inc.php
 title: geomcoll.inc.php - définition d'une collection hétérogène de géométries élémentaires
-includes: [ geom2d.inc.php ]
+includes: [ geometry.inc.php ]
 classes:
 doc: |
 journal: |
