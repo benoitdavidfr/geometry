@@ -1,0 +1,19 @@
+title: geometry - gestion des primtives géométriques GeoJSON / WKT
+path: /geometry
+doc: |
+  Définition des primitives géométriques fondées sur OGC:WKT et GeoJSON
+  + chgt de syst. de coordonnées uniquement sur IAG_GRS_1980
+journal: |
+  21/10/2017
+  - première version
+htmlFiles:
+phpScripts:
+phpIncludes:
+  - /geometry/geometry.inc.php
+  - /geometry/point.inc.php
+  - /geometry/bbox.inc.php
+  - /geometry/linestring.inc.php
+  - /geometry/polygon.inc.php
+  - /geometry/multigeom.inc.php
+  - /geometry/multipoint.inc.php
+  - /geometry/multilinestring.inc.php
