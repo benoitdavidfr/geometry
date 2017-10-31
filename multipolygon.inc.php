@@ -53,6 +53,15 @@ class MultiPolygon extends MultiGeom {
   title: function wkt() - génère une chaine de caractère correspondant au WKT avec l'entete
   */
   function wkt(int $nbdigits=null):string { return 'MULTIPOLYGON'.$this; }
+  
+  function filter(int $nbdigits) {
+    $geom = [];
+    foreach ($this->geom as $polygon) {
+      $filteredPolygon = $polygon->filter($nbdigits);
+      $geom[] = $filteredPolygon;
+    }
+    return new MultiPolygon($geom);
+  }
 };
 
 

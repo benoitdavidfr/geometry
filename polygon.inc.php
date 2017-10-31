@@ -96,7 +96,7 @@ class Polygon extends Geometry {
   name:  toString
   title: function toString($nbdigits=null) - affiche la liste des LineString entourée par des () en précisant évent. le nbre de chiffres significatifs
   */
-  function toString($nbdigits=null) {
+  function toString(int $nbdigits=null) {
     $str = '';
     foreach ($this->geom as $ls)
       $str .= ($str?',':'').$ls->toString($nbdigits);
@@ -113,13 +113,20 @@ class Polygon extends Geometry {
   name:  filter
   title: function filter($nbdigits) - filtre la géométrie en supprimant les points intermédiaires successifs identiques
   */
-  function filter($nbdigits) {
+  function filter(int $nbdigits):Polygon {
     $result = [];
     foreach ($this->geom as $ls) {
       $filtered = $ls->filter($nbdigits);
       $result[] = $filtered;
     }
     return new Polygon($result);
+  }
+  
+  function isDegenerated(): bool {
+    if (count($this->geom[0]) < 4)
+      return true;
+    else
+      return false;
   }
   
   /*PhpDoc: methods
@@ -149,7 +156,7 @@ class Polygon extends Geometry {
     La surface est positive si l'extérieur tourne dans le sens trigonométrique, <0 sinon.
     Si l'option 'noDirection' vaut true alors les sens ne sont pas pris en compte
   */
-  function area($options=[]):float {
+  function area(array $options=[]):float {
     $noDirection = (isset($options['noDirection']) and ($options['noDirection']));
     foreach ($this->geom as $ring)
       if (!isset($area))

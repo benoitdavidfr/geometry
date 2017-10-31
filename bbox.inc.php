@@ -50,9 +50,9 @@ class BBox {
     $coord = explode(',', $param);
     //var_dump($coord);
     if ((count($coord)>=2) and is_numeric($coord[0]) and is_numeric($coord[1]))
-      $this->bound([$coord[0]+0, $coord[1]+0]);
+      $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
     if ((count($coord)>=4) and is_numeric($coord[2]) and is_numeric($coord[3]))
-      $this->bound([$coord[2]+0, $coord[3]+0]);
+      $this->bound(new Point([$coord[2]+0, $coord[3]+0]));
   }
   
   // Renvoie vrai ssi la Bbox est indéterminée
@@ -174,7 +174,7 @@ class BBox {
   
   /*PhpDoc: methods
   name:  asPolygon
-  title: function asPolygon() - renvoie un Polygon
+  title: "function asPolygon(): Polygon - renvoie un Polygon"
   */
   function asPolygon(): Polygon {
     $ls = [
@@ -186,6 +186,17 @@ class BBox {
     ];
     $ls = new LineString($ls);
     return new Polygon([$ls]);
+  }
+  
+  /*PhpDoc: methods
+  name:  asArray
+  title: function asArray() - renvoie [xmin, ymin, xmax, ymax] ou null
+  */
+  function asArray(): array {
+    if ($this->undetermined())
+      return null;
+    else
+      return [$this->min()->x(), $this->min()->y(), $this->max()->x(), $this->max()->y()];
   }
   
   /*PhpDoc: methods

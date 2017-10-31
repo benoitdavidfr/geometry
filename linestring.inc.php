@@ -6,6 +6,8 @@ includes: [ geometry.inc.php ]
 functions:
 classes:
 journal: |
+  31/10/2017:
+  - ajout de la méthode simlify() implémentant l'algo de Douglas & Peucker
   21/10/2017:
   - première version
 */
@@ -285,6 +287,45 @@ class LineString extends Geometry {
       $ls = new LineString($lsstr);
       echo "${ls}->distancePointLineString((0,0))=";
       print_r($ls->distancePointLineString($p0));
+    }
+  }
+  
+  /*PhpDoc: methods
+  name:  simplify
+  title: "function simplify(float $distTreshold): LineString - simplifie la géométrie de la ligne brisée"
+  doc : |
+    Algorithme de Douglas & Peucker
+    Ne modifie pas l'objet courant
+    Retourne un nouvel objet LineString simplifié
+  */
+  function simplify(float $distTreshold): LineString {
+    if (count($this->points()) < 3)
+      return $this;
+    // cas d'une ligne ouverte
+    if (!$this->isClosed()) {
+      $pt0 = $this->points(0);
+      $ptn = $this->points(-1);
+      $distmax = 0; // distance max
+      $nptmax = -1; // num du point pour la distance max
+      foreach($this->points() as $n => $pt) {
+        $dist = abs($pt->distancePointLine($pt0, $ptn));
+        if ($dist > $distmax) {
+          $distmax = $dist;
+          $nptmax = $n;
+        }
+      }
+      if ($distmax < $distTreshold)
+        return new LineString([$pt0,$ptn]);
+      $ls1 = new LineString(array_slice($this->points(), 0, $nptmax));
+      $ls1 = $ls1->simplify($distTreshold);
+      $ls2 = new LineString(array_slice($this->points(), $nptmax));
+      $ls2 = $ls2->simplify($distTreshold);
+      $ls = new LineString(array_merge($ls1->points(),array_slice($ls2->points(),1)));
+      return $ls;
+    }
+    // cas d'une ligne fermée **** A FAIRE ****
+    else {
+      return $this;
     }
   }
   
