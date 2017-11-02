@@ -19,11 +19,15 @@ doc: |
   x, y et éventuellement z doivent être des nombres
 */
 class Point extends Geometry {
+  static $verbose = 0;
+  
   /*PhpDoc: methods
   name:  __construct
   title: __construct($param) - construction à partir d'un WKT ou d'un [num, num {, num}]
   */
   function __construct($param) {
+    if (self::$verbose)
+      echo "Point::__construct()\n";
     if (is_array($param)) {
       if ((count($param)==2) and is_numeric($param[0]) and is_numeric($param[1])) {
         $this->geom = [$param[0]+0, $param[1]+0];

@@ -20,12 +20,16 @@ doc: |
   protected $geom; // Pour un LineString: [Point]
 */
 class LineString extends Geometry {
+  static $verbose = 0;
+  
   /*PhpDoc: methods
   name:  __construct
   title: __construct($param) - construction à partir d'un WKT ou d'un [Point] ou d'un [[num0,num1]]
   */
   function __construct($param) {
     // echo "LineString::__construct(param=$param)\n";
+    if (self::$verbose)
+      echo "LineString::__construct()\n";
     if (is_array($param)) {
       $this->geom = [];
       foreach ($param as $no => $point) {

@@ -156,11 +156,11 @@ class BBox {
   
   /*PhpDoc: methods
   name:  inters
-  title: function inters($bbox1) - calcul du rapport de l'intersection des 2 boites sur le maximum des surfaces des 2 boites
+  title: function inters(BBox $bbox1) - calcul du rapport de l'intersection des 2 boites sur le maximum des surfaces des 2 boites
   doc: |
     Permet d'estimer si 2 boites correspondent
   */
-  function inters($bbox1):float {
+  function inters(BBox $bbox1):float {
     // echo "$this -> BBox::inters($bbox1)<br>\n";
     $xmin = max($bbox1->min()->x(),$this->min()->x());
     $ymin = max($bbox1->min()->y(),$this->min()->y());
@@ -170,6 +170,18 @@ class BBox {
       return 0;
     // echo "area=",$this->area(),", ",$bbox1->area(),"<br>\n";
     return (($xmax-$xmin)*($ymax-$ymin)) / max($bbox1->area(), $this->area());
+  }
+  
+  /*PhpDoc: methods
+  name:  isIncludedIn
+  title: "isIncludedIn(BBox $bbox1):bool - teste si this est inclus dans bbox1"
+  */
+  function isIncludedIn(BBox $bbox1):bool {
+    if ($this->min()->x() < $bbox1->min()->x()) return false;
+    if ($this->min()->y() < $bbox1->min()->y()) return false;
+    if ($this->max()->x() > $bbox1->max()->x()) return false;
+    if ($this->max()->y() > $bbox1->max()->y()) return false;
+    return true;
   }
   
   /*PhpDoc: methods

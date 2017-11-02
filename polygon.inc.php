@@ -18,6 +18,8 @@ doc: |
   protected $geom; // Pour un Polygon: [LineString]
 */
 class Polygon extends Geometry {
+  static $verbose = 0;
+
   /*PhpDoc: methods
   name:  lineStrings
   title: function lineStrings() - retourne la liste des LineStrings composant le polygone
@@ -30,6 +32,8 @@ class Polygon extends Geometry {
   */
   function __construct($param) {
     // echo "Polygon::__construct(param=$param)\n";
+    if (self::$verbose)
+      echo "Polygon::__construct()\n";
     if (is_array($param)) {
       $this->geom = [];
       foreach ($param as $ls) {

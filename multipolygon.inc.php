@@ -17,11 +17,15 @@ title: class MultiPolygon extends MultiGeom - Liste de polygones
 methods:
 */
 class MultiPolygon extends MultiGeom {
+  static $verbose = 0;
+  
   /*PhpDoc: methods
   name:  __construct
-  title: function __construct($param) - initialise un MultiLineString à partir d'un WKT ou de [LineString] ou de [[[num,num]]]
+  title: function __construct($param) - initialise un MultiPolygon à partir d'un WKT ou de [Polygon] ou de [[[[num,num]]]]
   */
   function __construct($param) {
+    if (self::$verbose)
+      echo "MultiPolygon::__construct()\n";
     if (is_array($param)) {
       $this->geom = [];
       foreach ($param as $elt) {
