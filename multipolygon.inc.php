@@ -9,7 +9,7 @@ journal: |
   22/10/2017:
     création
 */
-require_once 'geometry.inc.php';
+require_once __DIR__.'/multigeom.inc.php';
 
 /*PhpDoc: classes
 name:  MultiPolygon
@@ -52,6 +52,18 @@ class MultiPolygon extends MultiGeom {
       throw new Exception("Parametre non reconnu dans MultiPolygon::__construct()");
   }
   
+  // Test de prise en compte d'un MULTIPOLYGON
+  static function test_new() {
+    $geomstr = <<<EOT
+MULTIPOLYGON (((153042 6799129,153043 6799174,153063 6799199),(1 1,2 2)),((154613 6803109.5,154568 6803119,154538.9 6803145)))
+EOT;
+
+    $mp = new MultiPolygon($geomstr);
+    echo "multipolygon=$mp\n";
+    echo "wkt=",$mp->wkt(),"\n";
+    echo "GeoJSON:",json_encode($mp->geojson()),"\n";
+  }
+  
   /*PhpDoc: methods
   name:  wkt
   title: function wkt() - génère une chaine de caractère correspondant au WKT avec l'entete
@@ -70,15 +82,21 @@ class MultiPolygon extends MultiGeom {
 
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
-echo "<html><head><meta charset='UTF-8'><title>multilinestring</title></head><body><pre>";
+echo "<html><head><meta charset='UTF-8'><title>MultiPolygon</title></head><body><pre>";
+require_once __DIR__.'/inc.php';
 
-
-// Test de prise en compte d'un MULTIPOLYGON
-$geomstr = <<<EOT
-MULTIPOLYGON (((153042 6799129,153043 6799174,153063 6799199),(1 1,2 2)),((154613 6803109.5,154568 6803119,154538.9 6803145)))
+if (!isset($_GET['test'])) {
+  echo <<<EOT
+</pre>
+<h2>Test de la classe MultiPolygon</h2>
+<ul>
+  <li><a href='?test=test_new'>test_new</a>
+</ul>\n
 EOT;
+  die();
+}
+else {
+  $test = $_GET['test'];
+  MultiPolygon::$test();
+}
 
-$mp = new MultiPolygon($geomstr);
-echo "multipolygon=$mp\n";
-echo "wkt=",$mp->wkt(),"\n";
-echo "GeoJSON:",json_encode($mp->geojson()),"\n";

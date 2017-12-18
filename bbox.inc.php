@@ -41,21 +41,28 @@ class BBox {
   name:  __construct
   title: function __construct($param=null) - initialise une boite en fonction du paramètre
   doc: |
-    Sans paramètre la boite est initialisée indéterminée
-    Le paramètre optionnel est une chaine de la forme "nombre,nombre" ou "nombre,nombre,nombre,nombre"
+    Sans paramètre la boite est initialisée indéterminée.
+    Si le paramètre optionnel est une chaine de la forme "nombre,nombre" alors min et max valent le point indiqué
+    Si la chaine est de la forme "nombre,nombre,nombre,nombre" alors min correspond aux 2 premières valeurs et
+    max aux deux suivantes
   */
   function __construct(string $param=null) {
     if ($param===null)
       return;
     $coord = explode(',', $param);
     //var_dump($coord);
-    if ((count($coord)>=2) and is_numeric($coord[0]) and is_numeric($coord[1]))
+    if ((count($coord) == 2) and is_numeric($coord[0]) and is_numeric($coord[1]))
       $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
-    if ((count($coord)>=4) and is_numeric($coord[2]) and is_numeric($coord[3]))
+    elseif ((count($coord) == 4) and is_numeric($coord[0]) and is_numeric($coord[1])
+             and is_numeric($coord[2]) and is_numeric($coord[3])) {
+      $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
       $this->bound(new Point([$coord[2]+0, $coord[3]+0]));
+    }
+    else
+      throw new Exception("Parametre non reconnu dans BBox::__construct()");
   }
   
-  // Renvoie vrai ssi la Bbox est indéterminée
+  // Renvoie vrai ssi la BBox est indéterminée
   function undetermined() { return $this->min===null; }
   
   /*PhpDoc: methods
@@ -93,7 +100,7 @@ class BBox {
   
   /*PhpDoc: methods
   name:  union
-  title: function union(BBox $bbox) - Agrandit la boite courante pour contenir la boite en paramètre et la renvoit
+  title: function union(BBox $bbox) - Agrandit la boite courante pour contenir la boite en paramètre et la renvoie
   */
   function union(BBox $bbox) {
     if ($bbox->min===null)
@@ -107,13 +114,13 @@ class BBox {
   name:  size
   title: function size() - longueur de la diagonale
   */
-  function size():float { return ($this->undetermined() ? null : $this->min->distance($this->max)); }
+  function size(): ?float { return ($this->undetermined() ? null : $this->min->distance($this->max)); }
   
   /*PhpDoc: methods
   name:  area
   title: function area() - surface
   */
-  function area():float {
+  function area(): ?float {
     return ($this->undetermined() ? null
               : ($this->max->x() - $this->min->x()) * ($this->max->y() - $this->min->y()));
   }
@@ -122,7 +129,7 @@ class BBox {
   name:  mindist
   title: function mindist($r1) - calcul du minimum les distances entre les points de 2 boites
   */
-  function mindist(Bbox $r1):float {
+  function mindist(BBox $r1): float {
     $debug = 0;
     if (($this->max->x() >= $r1->min->x()) and ($this->min->x() <= $r1->max->x())) { // Les X s'intersectent
       if (($this->max->y() >= $r1->min->y()) and ($this->min->y() <= $r1->max->y())) { // Les Y s'intersectent
@@ -151,6 +158,29 @@ class BBox {
         if ($debug) echo "cas 4c : r1 au SW de this\n";
         return $this->min->distance($r1->max);
       }
+    }
+  }
+  static function test_mindist() { // Test de self::mindist()
+    echo "Test de la distance entre 2 rectangles\n";
+    $ls0 = new LineString('LINESTRING(0 0,100 100)');
+    $r0 = $ls0->bbox();
+    echo "r0=$r0\n";
+    foreach ([
+        'LINESTRING(30 30,200 200)',  // cas 1 : X & Y intersectent -> 0
+        'LINESTRING(130 70,200 200)', // cas 2 : Y intersectent mais pas X
+        'LINESTRING(70 -100,200 -50)', // cas 3 : X intersectent mais pas Y
+        'LINESTRING(170 170,200 250)', // cas 4a : r1 au NE de r0
+        'LINESTRING(101 101,200 250)', // cas 4a : r1 au NE de r0
+        'LINESTRING(170 -170,200 -250)', // cas 4b : r1 au SE de r0
+        'LINESTRING(101 -1,101 -100)', // cas 4b : r1 au SE de r0
+        'LINESTRING(-170 -170,-200 -250)', // cas 4c : r1 au SW de r0
+        'LINESTRING(-101 -170,-1 -1)', // cas 4c : r1 au SW de r0
+        'LINESTRING(-170 170,-200 250)', // cas 4d : r1 au NW de r0
+        'LINESTRING(-170 170,-1 101)', // cas 4d : r1 au NW de r0
+      ] as $lsstr) {
+        $ls1 = new LineString($lsstr);
+        $r1 = $ls1->bbox();
+        echo "r1=$r1 -> d=",$r0->mindist($r1),"\n";
     }
   }
   
@@ -214,13 +244,18 @@ class BBox {
   /*PhpDoc: methods
   name:  chgCoordSys
   title: function chgCoordSys($src, $dest) - crée un nouveau BBox en changeant le syst. de coord. de $src en $dest
+  doc: |
+    L'algorithme n'est pas strictement correct.
   */
   function chgCoordSys(string $src, string $dest) {
     if ($this->min===null)
       return $this;
     $min = $this->min->chgCoordSys($src, $dest);
     $max = $this->max->chgCoordSys($src, $dest);
-    return new Bbox($min, $max);
+    $bbox = new BBox;
+    $bbox->bound($min);
+    $bbox->bound($max);
+    return $bbox;
   }
   
   /*PhpDoc: methods
@@ -270,3 +305,19 @@ class BBox {
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
 echo "<html><head><meta charset='UTF-8'><title>bbox</title></head><body><pre>";
+require_once __DIR__.'/inc.php';
+
+if (!isset($_GET['test'])) {
+  echo <<<EOT
+</pre>
+<h2>Test de la classe BBox</h2>
+<ul>
+  <li><a href='?test=test_mindist'>Test de self::mindist()</a>
+</ul>\n
+EOT;
+  die();
+}
+else {
+  $test = $_GET['test'];
+  BBox::$test();
+}

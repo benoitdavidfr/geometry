@@ -9,7 +9,7 @@ journal: |
   22/10/2017:
     création
 */
-require_once 'geometry.inc.php';
+require_once __DIR__.'/geometry.inc.php';
 
 /*PhpDoc: classes
 name:  GeometryCollection
@@ -53,6 +53,29 @@ class GeometryCollection extends Geometry {
     }
   }
   
+  // Test de prise en compte d'un MULTIPOLYGON
+  static function test_new() {
+    // Test de prise en compte d'un GEOMTRYCOLLECTION
+    $geomstr = <<<EOT
+GEOMETRYCOLLECTION(POLYGON((153042 6799129,153043 6799174,153063 6799199),(1 1,2 2)),POLYGON((154613 6803109.5,154568 6803119,154538.89999999999 6803145)),LINESTRING(153042 6799129,153043 6799174,153063 6799199),LINESTRING(154613 6803109.5,154568 6803119,154538.89999999999 6803145),POINT(153042 6799129),POINT(153043 6799174),POINT(153063 6799199))
+EOT;
+
+    $geomcoll = new GeometryCollection($geomstr);
+    echo "geomcoll=$geomcoll\n";
+    echo "wkt=",$geomcoll->wkt(),"\n";
+    echo "GeoJSON:",json_encode($geomcoll->geojson()),"\n";
+    //echo "GeoJSON:",json_encode($geomcoll->geojson(),JSON_PRETTY_PRINT),"\n";
+
+    $geomcoll = new GeometryCollection([
+        new Polygon('POLYGON((153042 6799129,153043 6799174,153063 6799199))'),
+        new Point('POINT(153063 6799199)'),
+    ]);
+    echo "wkt=",$geomcoll->wkt(),"\n";
+    echo "GeoJSON:",json_encode($geomcoll->geojson()),"\n";
+
+    $gc2 = Geometry::fromGeoJSON($geomcoll->geojson());
+  }
+  
   /*PhpDoc: methods
   name:  filter
   title: function filter($nbdigits) - filtre la géométrie en supprimant les points intermédiaires successifs identiques
@@ -60,7 +83,7 @@ class GeometryCollection extends Geometry {
   function filter($nbdigits) {
     $called_class = get_called_class();
     $collection = [];
-    foreach ($this->collection as $geom) {
+    foreach ($this->geom as $geom) {
 //      echo "geom=$geom<br>\n";
       $filtered = $geom->filter($nbdigits);
 //      echo "filtered=$filtered<br>\n";
@@ -125,26 +148,22 @@ class GeometryCollection extends Geometry {
 
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
-
 echo "<html><head><meta charset='UTF-8'><title>geomcoll</title></head><body><pre>";
 
+require_once __DIR__.'/inc.php';
 
-// Test de prise en compte d'un GEOMTRYCOLLECTION
-$geomstr = <<<EOT
-GEOMETRYCOLLECTION(POLYGON((153042 6799129,153043 6799174,153063 6799199),(1 1,2 2)),POLYGON((154613 6803109.5,154568 6803119,154538.89999999999 6803145)),LINESTRING(153042 6799129,153043 6799174,153063 6799199),LINESTRING(154613 6803109.5,154568 6803119,154538.89999999999 6803145),POINT(153042 6799129),POINT(153043 6799174),POINT(153063 6799199))
+if (!isset($_GET['test'])) {
+  echo <<<EOT
+</pre>
+<h2>Test de la classe GeometryCollection</h2>
+<ul>
+  <li><a href='?test=test_new'>test_new</a>
+</ul>\n
 EOT;
+  die();
+}
+else {
+  $test = $_GET['test'];
+  GeometryCollection::$test();
+}
 
-$geomcoll = new GeometryCollection($geomstr);
-echo "geomcoll=$geomcoll\n";
-echo "wkt=",$geomcoll->wkt(),"\n";
-echo "GeoJSON:",json_encode($geomcoll->geojson()),"\n";
-//echo "GeoJSON:",json_encode($geomcoll->geojson(),JSON_PRETTY_PRINT),"\n";
-
-$geomcoll = new GeometryCollection([
-    new Polygon('POLYGON((153042 6799129,153043 6799174,153063 6799199))'),
-    new Point('POINT(153063 6799199)'),
-]);
-echo "wkt=",$geomcoll->wkt(),"\n";
-echo "GeoJSON:",json_encode($geomcoll->geojson()),"\n";
-
-$gc2 = Geometry::fromGeoJSON($geomcoll->geojson());

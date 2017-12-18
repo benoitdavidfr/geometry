@@ -9,7 +9,7 @@ journal: |
   21/10/2017:
   - première version
 */
-require_once 'geometry.inc.php';
+require_once __DIR__.'/geometry.inc.php';
 /*PhpDoc: classes
 name:  Polygon
 title: Class Polygon extends Geometry - Définition d'un Polygon
@@ -73,6 +73,14 @@ class Polygon extends Geometry {
       throw new Exception("Parametre non reconnu dans Polygon::__construct($param)");
   }
   
+
+  static function test_new() {
+    $pol = new Polygon('POLYGON((1 0,0 1,-1 0,0 -1,1 0))');
+    echo "pol=$pol\n";
+    echo "WKT:",$pol->wkt(),"\n";
+    echo "GeoJSON:",json_encode($pol->geojson()),"\n";
+  }
+  
   /*PhpDoc: methods
   name:  addHole
   title: function addHole(LineString $hole) - aoute un trou au polygone
@@ -126,16 +134,11 @@ class Polygon extends Geometry {
     return new Polygon($result);
   }
   
-  function isDegenerated(): bool {
-    if (count($this->geom[0]) < 4)
-      return true;
-    else
-      return false;
-  }
+  function isDegenerated(): bool { return (count($this->geom[0]) < 4); }
   
   /*PhpDoc: methods
   name:  coordinates
-  title: function coordinates() - renvoie un tableau de coordonnées
+  title: function coordinates() - renvoie les coordonnées come [ [ [ num ] ] ]
   */
   function coordinates():array {
     $coordinates = [];
@@ -212,14 +215,22 @@ class Polygon extends Geometry {
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
 echo "<html><head><meta charset='UTF-8'><title>polygon</title></head><body><pre>";
+require_once __DIR__.'/inc.php';
 
-
-Polygon::test_pointInPolygon();
-Polygon::test_area();
-
-if (1) {
-  $pol = new Polygon('POLYGON((1 0,0 1,-1 0,0 -1,1 0))');
-  echo "pol=$pol\n";
-  echo "WKT:",$pol->wkt(),"\n";
-  echo "GeoJSON:",json_encode($pol->geojson()),"\n";
+if (!isset($_GET['test'])) {
+  echo <<<EOT
+</pre>
+<h2>Test de la classe Polygon</h2>
+<ul>
+  <li><a href='?test=test_new'>test_new</a>
+  <li><a href='?test=test_pointInPolygon'>test_pointInPolygon</a>
+  <li><a href='?test=test_area'>test_area</a>
+</ul>\n
+EOT;
+  die();
 }
+else {
+  $test = $_GET['test'];
+  Polygon::$test();
+}
+

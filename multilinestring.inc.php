@@ -9,7 +9,7 @@ journal: |
   22/10/2017:
     création
 */
-require_once 'geometry.inc.php';
+require_once __DIR__.'/multigeom.inc.php';
 
 /*PhpDoc: classes
 name:  MultiLineString
@@ -48,6 +48,18 @@ class MultiLineString extends MultiGeom {
       throw new Exception("Parametre non reconnu dans MultiLineString::__construct()");
   }
 
+  static function test_new() {
+    // Test de prise en compte d'un MULTILINESTRING
+    $geomstr = <<<EOT
+MULTILINESTRING ((153042 6799129,153043 6799174,153063 6799199),(154613 6803109.5,154568 6803119,154538.89999999999 6803145))
+EOT;
+
+    $mls = new MultiLineString($geomstr);
+    echo "multilinestring=$mls\n";
+    echo "wkt=",$mls->wkt(),"\n";
+    echo "GeoJSON:",json_encode($mls->geojson()),"\n";
+  }
+
   /*PhpDoc: methods
   name:  wkt
   title: function wkt() - génère une chaine de caractère correspondant au WKT avec l'entete
@@ -58,14 +70,20 @@ class MultiLineString extends MultiGeom {
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
 echo "<html><head><meta charset='UTF-8'><title>multilinestring</title></head><body><pre>";
+require_once __DIR__.'/inc.php';
 
-
-// Test de prise en compte d'un MULTILINESTRING
-$geomstr = <<<EOT
-MULTILINESTRING ((153042 6799129,153043 6799174,153063 6799199),(154613 6803109.5,154568 6803119,154538.89999999999 6803145))
+if (!isset($_GET['test'])) {
+  echo <<<EOT
+</pre>
+<h2>Test de la classe MultiLineString</h2>
+<ul>
+  <li><a href='?test=test_new'>test_new</a>
+</ul>\n
 EOT;
+  die();
+}
+else {
+  $test = $_GET['test'];
+  MultiLineString::$test();
+}
 
-$mls = new MultiLineString($geomstr);
-echo "multilinestring=$mls\n";
-echo "wkt=",$mls->wkt(),"\n";
-echo "GeoJSON:",json_encode($mls->geojson()),"\n";

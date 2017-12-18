@@ -9,11 +9,11 @@ journal: |
   22/10/2017:
     création
 */
-require_once 'geometry.inc.php';
+require_once __DIR__.'/geometry.inc.php';
 
 /*PhpDoc: classes
 name:  MultiGeom
-title: abstract class MultiGeom extends Geometry - Liste de géométries élémentaires
+title: abstract class MultiGeom extends Geometry - Liste de géométries élémentaires homogènes
 methods:
 */
 abstract class MultiGeom extends Geometry {
@@ -37,6 +37,22 @@ abstract class MultiGeom extends Geometry {
     foreach ($this->geom as $elt)
       $coordinates[] = $elt->coordinates();
     return $coordinates;
+  }
+  
+  /*PhpDoc: methods
+  name:  filter
+  title: function filter(int $nbdigits) - renvoie une nouvelle collection dont chaque élément est filtré supprimant les points successifs identiques
+  doc: |
+    Les coordonnées sont arrondies avec $nbdigits chiffres significatifs
+    Un filtre sans arrondi n'a pas de sens.
+  */
+  function filter(int $nbdigits) {
+    $coll = [];
+    foreach ($this->geom as $elt) {
+      $coll[] = $elt->filter($nbdigits);
+    }
+    $class = get_called_class();
+    return new $class ($coll);
   }
 };
 

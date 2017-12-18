@@ -11,7 +11,7 @@ journal: |
   21/10/2017:
   - première version
 */
-require_once 'geometry.inc.php';
+require_once __DIR__.'/geometry.inc.php';
 /*PhpDoc: classes
 name:  LineString
 title: Class LineString extends Geometry - Définition d'une LineString
@@ -24,7 +24,7 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  __construct
-  title: __construct($param) - construction à partir d'un WKT ou d'un [Point] ou d'un [[num0,num1]]
+  title: __construct($param) - construction à partir d'un WKT ou d'un [Point] ou d'un [[num, num {,num}]]
   */
   function __construct($param) {
     // echo "LineString::__construct(param=$param)\n";
@@ -48,69 +48,84 @@ class LineString extends Geometry {
       }
       return;
     }
-    if (!is_string($param) or !preg_match('!^(LINESTRING\s*)?\(!', $param))
-      throw new Exception("Parametre '$param' non reconnu dans LineString::__construct()");
-    $this->geom = [];
-    $pattern = '!^(LINESTRING\s*)?\(\s*([-\d.e]+)\s+([-\d.e]+)(\s+([-\d.e]+))?\s*,?!i';
-    while (preg_match($pattern, $param, $matches)) {
-      // echo "matches="; print_r($matches);
-      // echo "x=$matches[2], y=$matches[3]",(isset($matches[5])?",z=$matches[5]":''),"\n";
-      if (isset($matches[5]))
-        $this->geom[] = new Point([$matches[2], $matches[3], $matches[5]]);
-      else
-        $this->geom[] = new Point([$matches[2], $matches[3]]);
-      $param = preg_replace($pattern, '(', $param, 1);
+    if (is_string($param)) {
+      if (!preg_match('!^(LINESTRING\s*)?\(!', $param))
+        throw new Exception("Parametre '$param' non reconnu dans LineString::__construct()");
+      $this->geom = [];
+      $pattern = '!^(LINESTRING\s*)?\(\s*([-\d.e]+)\s+([-\d.e]+)(\s+([-\d.e]+))?\s*,?!i';
+      while (preg_match($pattern, $param, $matches)) {
+        // echo "matches="; print_r($matches);
+        // echo "x=$matches[2], y=$matches[3]",(isset($matches[5])?",z=$matches[5]":''),"\n";
+        if (isset($matches[5]))
+          $this->geom[] = new Point([$matches[2], $matches[3], $matches[5]]);
+        else
+          $this->geom[] = new Point([$matches[2], $matches[3]]);
+        $param = preg_replace($pattern, '(', $param, 1);
+      }
+      if ($param<>'()')
+        throw new Exception("Erreur dans LineString::__construct(), Reste param=$param");
+      return;
     }
-    if ($param<>'()')
-      throw new Exception("Erreur dans LineString::__construct(), Reste param=$param");
+    throw new Exception("Parametre de type ".gettype($param)." non reconnu dans LineString::__construct()");
+  }
+  
+  static function test_new() {
+    foreach ([
+      'LINESTRING(30 30,200 200)',
+      [[10,10],[20,20]],
+      [[10,10],[20,20,60]],
+      [new Point([0,0]), new Point([5,10])],
+    ] as $param) {
+      $ls = new LineString($param);
+      if (is_array($param)) {
+        echo "new LineString("; print_r($param); echo " -> $ls\n";
+        //print_r($ls);
+      }
+      else
+        echo "new LineString($param) -> $ls\n";
+      echo "WKT:",$ls->wkt(),"\n";
+    }
   }
     
+  static function test_new_bad_param() { // test d'erreur sur mauvais type du paramètre
+    $ls0 = new LineString(55);
+  }
+  
   /*PhpDoc: methods
   name:  __toString
-  title: function __toString() - affiche la liste des points entourées par des ()
-  doc: |
-    Si parent::$precision est défini alors les coordonnées sont arrondies avant l'affichage
+  title: "function __toString(): string - affiche la liste des points entourées par des ()"
   */
   function __toString():string { return '('.implode(',',$this->geom).')'; }
   
   /*PhpDoc: methods
-  name:  toString
-  title: function toString($nbdigits=null) - affiche la liste des points entourées par des ()
-  doc: |
-    Si le paramètre nbdigits est défini alors les coordonnées sont arrondies avant l'affichage
+  name:  points
+  title: "function points(): array - retourne la liste des points composant la ligne"
   */
-  function toString($nbdigits=null) {
-    $str = '';
-    foreach ($this->geom as $pt)
-      $str .= ($str?',':'').$pt->toString($nbdigits);
-    return '('.$str.')';
-  }
+  function points(): array { return $this->geom; }
   
   /*PhpDoc: methods
   name:  points
-  title: function points($i=null) - retourne la liste des points composant la ligne ou un point particulier
+  title: "function point(int $i): Point - retourne un point particulier"
   doc: |
-    Sans paramètre, renvoit la liste de points
-    Avec comme paramètre un entier positif ou nul renvoit le ième point
+    Avec comme paramètre un entier positif ou 0 renvoit le ième point
     Avec un paramètre négatif renvoit un point à partir de la fin : -1 pour le dernier, ...
   */
-  function points(int $i=null) {
+  function point(int $i): Point {
     // echo "LineString::points(i=$i)<br>\n";
-    if ($i===null)
-      return $this->geom;
-    elseif ($i >= 0) {
-      // echo "geom[$i]=",$this->geom[$i],"\n";
+    if ($i >= 0)
       return $this->geom[$i];
-    }
     else
       return $this->geom[count($this->geom)+$i];
   }
   
   /*PhpDoc: methods
   name:  filter
-  title: function filter($nbdigits) - renvoie un nouveau linestring filtré supprimant les points successifs identiques
+  title: "function filter(int $nbdigits): LineString - renvoie un nouveau linestring filtré supprimant les points successifs identiques"
+  doc: |
+    Les coordonnées sont arrondies avec $nbdigits chiffres significatifs
+    Un filtre sans arrondi n'a pas de sens.
   */
-  function filter(int $nbdigits) {
+  function filter(int $nbdigits): LineString {
     //    echo "LineString::filter(nbdigits=$nbdigits)<br>\n";
     //    echo "ls=$this<br>\n";
     $filtered = [];
@@ -130,20 +145,20 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  chgCoordSys
-  title: function chgCoordSys($src, $dest) - créée un nouveau LineString en changeant le syst. de coord. de $src en $dest
+  title: "function chgCoordSys($src, $dest): LineString - créée un nouveau LineString en changeant le syst. de coord. de $src en $dest"
   */
-  function chgCoordSys($src, $dest) {
-    $lsgeo = [];
+  function chgCoordSys($src, $dest): LineString {
+    $ls = [];
     foreach ($this->geom as $pt)
-      $lsgeo[] = $pt->chgCoordSys($src, $dest);
-    return new LineString($lsgeo);
+      $ls[] = $pt->chgCoordSys($src, $dest);
+    return new LineString($ls);
   }
   
   /*PhpDoc: methods
   name:  coordinates
-  title: function coordinates() - renvoie un tableau de coordonnées
+  title: "function coordinates(): array - renvoie un tableau de coordonnées sous la forme [ [ num ] ]"
   */
-  function coordinates() {
+  function coordinates(): array {
     $coordinates = [];
     foreach ($this->geom as $pt)
       $coordinates[] = $pt->coordinates();
@@ -152,7 +167,7 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  draw
-  title: function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2) - dessine
+  title: "function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2) - dessine"
   */
   function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2) {
     // echo "appel de LineString::draw()\n";
@@ -161,9 +176,9 @@ class LineString extends Geometry {
     
   /*PhpDoc: methods
   name:  isClosed
-  title: function isClosed() - teste la fermeture de la polyligne
+  title: "function isClosed(): bool - teste la fermeture de la polyligne"
   */
-  function isClosed() { return ($this->geom[0] == $this->geom[count($this->geom)-1]); }
+  function isClosed(): bool { return ($this->geom[0] == $this->geom[count($this->geom)-1]); }
   static function test_isClosed() {
     foreach ([
       'LINESTRING(0 0,100 100)',
@@ -176,20 +191,20 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  length
-  title: function length() - renvoie la longueur de la polyligne
+  title: "function length(): float - renvoie la longueur de la polyligne"
   */
-  function length() {
+  function length(): float {
     $length = 0;
     foreach ($this->geom as $p) {
       if (isset($prec)) {
-        $v = substract($p, $prec);
+        $v = Point::substract($p, $prec);
         $length += $v->vectLength();
       }
       $prec = $p;
     }
     return $length;
   }
-  static function test_length() {
+  static function test_length(): void {
     foreach ([
       'LINESTRING(0 0,100 100)',
       'LINESTRING(0 0,100 100,0 0)',
@@ -201,9 +216,9 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  area
-  title: function area() - renvoie la surface dans le système de coordonnées courant
+  title: "function area(): float - renvoie la surface dans le système de coordonnées courant"
   */
-  function area():float {
+  function area(): float {
     $area = 0.0;
     $n = count($this->geom);
     $pt0 = $this->geom[0];
@@ -224,11 +239,11 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  distancePointPointList
-  title: function distancePointPointList(Point $pt) - distance minimum d'une liste de points à un point
+  title: "function distancePointPointList(Point $pt): array - distance minimum d'une liste de points à un point"
   doc : |
-    Retourne la distance  et le no du point qui correspond à la distance minimum
+    Retourne la distance et le no du point qui correspond à la distance minimum
   */
-  function distancePointPointList(Point $pt) {
+  function distancePointPointList(Point $pt): array {
     for ($i=0; $i<count($this->geom); $i++) {
       $v = Point::substract($pt, $this->geom[$i]);
       $d = $v->vectLength();
@@ -239,7 +254,7 @@ class LineString extends Geometry {
     }
     return ['dist'=>$dist, 'n'=>$n];
   }
-  static function test_distancePointPointList() {
+  static function test_distancePointPointList(): void {
     foreach ([
       'LINESTRING(0 0,1 1,1 0,0 1)',
       'LINESTRING(1 1,1 0,0 1)',
@@ -252,11 +267,11 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  area
-  title: function distancePointLineString(Point $pt) - distance minimum de la ligne brisée au point pt
+  title: "function distancePointLineString(Point $pt): array - distance minimum de la ligne brisée au point pt"
   doc : |
     Retourne la distance et le point qui correspond à la distance minimum
   */
-  function distancePointLineString(Point $pt) {
+  function distancePointLineString(Point $pt): array {
     $p0 = $this->geom[0];
     $p0pt = Point::substract($p0,$pt);
     $dmin = $p0pt->vectLength();
@@ -282,7 +297,7 @@ class LineString extends Geometry {
     }
     return ['dmin'=>$dmin, 'pt'=>$resPt];
   }
-  static function test_distancePointLineString() {
+  static function test_distancePointLineString(): void {
     $p0 = new Point('POINT(0 0)');
     foreach ([
       'LINESTRING(0 0,1 1,1 0,0 1)',
@@ -296,20 +311,20 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  simplify
-  title: function simplify(float $distTreshold) - simplifie la géométrie de la ligne brisée
+  title: "function simplify(float $distTreshold): ?LineString - simplifie la géométrie de la ligne brisée"
   doc : |
     Algorithme de Douglas & Peucker
     Ne modifie pas l'objet courant
     Retourne un nouvel objet LineString simplifié
-    ou null si la ligne est fermée et que la distance max est inférieur au seuil
+    ou null si la ligne est fermée et que la distance max est inférieure au seuil
   */
-  function simplify(float $distTreshold) {
+  function simplify(float $distTreshold): ?LineString {
     if (count($this->points()) < 3)
       return $this;
     // cas d'une ligne ouverte
     if (!$this->isClosed()) {
-      $pt0 = $this->points(0);
-      $ptn = $this->points(-1);
+      $pt0 = $this->point(0);
+      $ptn = $this->point(-1);
       $distmax = 0; // distance max
       $nptmax = -1; // num du point pour la distance max
       foreach($this->points() as $n => $pt) {
@@ -330,7 +345,7 @@ class LineString extends Geometry {
     }
     // cas d'une ligne fermée **** A FAIRE ****
     else {
-      $pt0 = $this->points(0);
+      $pt0 = $this->point(0);
       $distmax = 0; // distance max
       $nptmax = -1; // num du point pour la distance max
       foreach($this->points() as $n => $pt) {
@@ -353,7 +368,7 @@ class LineString extends Geometry {
   
   /*PhpDoc: methods
   name:  pointInPolygon
-  title: pointInPolygon(Point $pt) - teste si un point pt est dans le polygone
+  title: "pointInPolygon(Point $pt): bool - teste si un point pt est dans le polygone"
   doc: |
     Code de référence en C:
     int pnpoly(int npol, float *xp, float *yp, float x, float y)
@@ -367,7 +382,7 @@ class LineString extends Geometry {
       return c;
     }
   */
-  function pointInPolygon(Point $pt) {
+  function pointInPolygon(Point $pt): bool {
     $c = false;
     $j = count($this->geom) - 1;
     for($i=0; $i<count($this->geom); $i++) {
@@ -398,53 +413,27 @@ class LineString extends Geometry {
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
 echo "<html><head><meta charset='UTF-8'><title>linestring</title></head><body><pre>";
+require_once __DIR__.'/inc.php';
 
-
-//LineString::test_pointInPolygon();
-//LineString::test_distancePointLineString();
-//LineString::test_distancePointPointList();
-//LineString::test_area();
-//LineString::test_length();
-//LineString::test_isClosed();
-
-if (1) {
-  foreach ([
-    'LINESTRING(30 30,200 200)',
-    [[10,10],[20,20]],
-    [[10,10],[20,20,60]],
-    [new Point([0,0]), new Point([5,10])],
-  ] as $param) {
-    $ls = new LineString($param);
-    if (is_array($param)) {
-      echo "new LineString("; print_r($param); echo " -> $ls\n";
-      //print_r($ls);
-    }
-    else
-      echo "new LineString($param) -> $ls\n";
-    echo "WKT:",$ls->wkt(),"\n";
-  }
+if (!isset($_GET['test'])) {
+  echo <<<EOT
+</pre>
+<h2>Test de la classe LineString</h2>
+<ul>
+  <li><a href='?test=test_new'>test de new</a>
+  <li><a href='?test=test_new_bad_param'>test de new avec un mauvais paramètre</a>
+  <li><a href='?test=test_pointInPolygon'>test_pointInPolygon</a>
+  <li><a href='?test=test_distancePointLineString'>test_distancePointLineString</a>
+  <li><a href='?test=test_distancePointPointList'>test_distancePointPointList</a>
+  <li><a href='?test=test_area'>test_area</a>
+  <li><a href='?test=test_length'>test_length</a>
+  <li><a href='?test=test_isClosed'>test_isClosed</a>
+</ul>\n
+EOT;
+  die();
+}
+else {
+  $test = $_GET['test'];
+  LineString::$test();
 }
 
-if (0) {
-  echo "Test de la distance entre 2 rectangles\n";
-  $ls0 = new LineString('LINESTRING(0 0,100 100)');
-  $r0 = $ls0->bbox();
-  echo "r0=$r0\n";
-  foreach ([
-      'LINESTRING(30 30,200 200)',  // cas 1 : X & Y intersectent -> 0
-      'LINESTRING(130 70,200 200)', // cas 2 : Y intersectent mais pas X
-      'LINESTRING(70 -100,200 -50)', // cas 3 : X intersectent mais pas Y
-      'LINESTRING(170 170,200 250)', // cas 4a : r1 au NE de r0
-      'LINESTRING(101 101,200 250)', // cas 4a : r1 au NE de r0
-      'LINESTRING(170 -170,200 -250)', // cas 4b : r1 au SE de r0
-      'LINESTRING(101 -1,101 -100)', // cas 4b : r1 au SE de r0
-      'LINESTRING(-170 -170,-200 -250)', // cas 4c : r1 au SW de r0
-      'LINESTRING(-101 -170,-1 -1)', // cas 4c : r1 au SW de r0
-      'LINESTRING(-170 170,-200 250)', // cas 4d : r1 au NW de r0
-      'LINESTRING(-170 170,-1 101)', // cas 4d : r1 au NW de r0
-    ] as $lsstr) {
-      $ls1 = new LineString($lsstr);
-      $r1 = $ls1->bbox();
-      echo "r1=$r1 -> d=",$r0->mindist($r1),"\n";
-  }
-}
