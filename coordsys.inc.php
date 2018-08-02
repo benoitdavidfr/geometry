@@ -71,10 +71,10 @@ doc: |
       PARAMETER["false_northing",6600000],
       UNIT["Meter",1.0]]
 */
-  static function detect($opengiswkt) {
+  static function detect(string $opengiswkt): string {
     $pattern = '!^PROJCS\["RGF93_Lambert_93",\s*'
                .'GEOGCS\["GCS_RGF_1993",\s*'
-                  .'DATUM\["RGF_1993",\s*'
+                  .'DATUM\["(RGF_1993|Reseau_Geodesique_Francais_1993)",\s*'
                     .'SPHEROID\["GRS_1980",6378137.0,298.257222101\]\],\s*'
                   .'PRIMEM\["Greenwich",0.0\],\s*'
                   .'UNIT\["Degree",0.0174532925199433\]\],\s*'
@@ -86,13 +86,13 @@ doc: |
                 .'PARAMETER\["Standard_Parallel_2",49.0\],\s*'
                 .'PARAMETER\["Latitude_Of_Origin",46.5\],\s*'
                 .'UNIT\["Meter",1.0\]\]\s*$'
- /*
+/*
 */
                 .'!';
     if (preg_match($pattern, $opengiswkt))
       return 'L93';
     else
-      die("Don't match");
+      throw new Exception ("PROJCS Don't match in CoordSys::detect()");
   }
   
 /*PhpDoc: methods

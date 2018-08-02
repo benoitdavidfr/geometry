@@ -40,6 +40,20 @@ abstract class MultiGeom extends Geometry {
   }
   
   /*PhpDoc: methods
+  name:  isValid
+  title: "function isValid(): bool - renvoie booléen"
+  */
+  function isValid(): bool {
+    if (count($this->geom) == 0)
+      return false;
+    foreach ($this->geom as $elt) {
+      if (!$elt->isValid())
+        return false;
+    }
+    return true;
+  }
+
+  /*PhpDoc: methods
   name:  filter
   title: function filter(int $nbdigits) - renvoie une nouvelle collection dont chaque élément est filtré supprimant les points successifs identiques
   doc: |

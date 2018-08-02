@@ -119,6 +119,26 @@ class LineString extends Geometry {
   }
   
   /*PhpDoc: methods
+  name:  isValid
+  title: "function isValid(): bool - renvoie booléen"
+  */
+  function isValid(): bool {
+    return count($this->geom) > 1;
+  }
+  
+  /*PhpDoc: methods
+  name:  proj2D
+  title: "function proj2D(): LineString - renvoie un nouveau 2D"
+  */
+  function proj2D(): LineString {
+    $proj = [];
+    foreach ($this->geom as $pt) {
+      $proj[] = $pt->proj2D();
+    }
+    return new LineString($proj);
+  }
+  
+  /*PhpDoc: methods
   name:  filter
   title: "function filter(int $nbdigits): LineString - renvoie un nouveau linestring filtré supprimant les points successifs identiques"
   doc: |

@@ -96,6 +96,12 @@ class Point extends Geometry {
   function y() { return $this->geom[1]; }
   
   /*PhpDoc: methods
+  name:  isValid
+  title: "function isValid(): bool - renvoie booléen"
+  */
+  function isValid(): bool { return true; }
+
+  /*PhpDoc: methods
   name:  round
   title: "function round(int $nbdigits): Point - arrondit un point avec le nb de chiffres indiqués"
   */
@@ -103,7 +109,7 @@ class Point extends Geometry {
     if (!isset($this->geom[2]))
       return new Point([ round($this->geom[0],$nbdigits), round($this->geom[1], $nbdigits) ]);
     else
-      return new Point([ round($this->geom[0],$nbdigits), round($this->geom[1], $nbdigits), $this->geiom[2] ]);
+      return new Point([ round($this->geom[0],$nbdigits), round($this->geom[1], $nbdigits), $this->geom[2] ]);
   }
     
   /*PhpDoc: methods
@@ -111,6 +117,12 @@ class Point extends Geometry {
   title: "function filter(int $nbdigits): Point - synonyme de round()"
   */
   function filter(int $nbdigits): Point { return $this->round($nbdigits); }
+    
+  /*PhpDoc: methods
+  name:  proj2D
+  title: "function proj2D(): Point - projrction 2D"
+  */
+  function proj2D(): Point { return new Point([$this->geom[0], $this->geom[1]]); }
     
   /*PhpDoc: methods
   name:  __toString

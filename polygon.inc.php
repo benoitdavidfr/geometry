@@ -122,6 +122,32 @@ class Polygon extends Geometry {
   function bbox():BBox { return $this->geom[0]->bbox(); }
   
   /*PhpDoc: methods
+  name:  isValid
+  title: "function isValid(): bool - renvoie booléen"
+  */
+  function isValid(): bool {
+    if (count($this->geom) == 0)
+      return false;
+    foreach ($this->geom as $ls) {
+      if (!$ls->isValid())
+        return false;
+    }
+    return true;
+  }
+  
+  /*PhpDoc: methods
+  name:  proj2D
+  title: "function proj2D(): Polygon - renvoie un nouveau 2D"
+  */
+  function proj2D(): Polygon {
+    $proj = [];
+    foreach ($this->geom as $ls) {
+      $proj[] = $ls->proj2D();
+    }
+    return new Polygon($proj);
+  }
+
+  /*PhpDoc: methods
   name:  filter
   title: function filter($nbdigits) - filtre la géométrie en supprimant les points intermédiaires successifs identiques
   */

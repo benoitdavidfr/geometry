@@ -1,4 +1,4 @@
-title: geometry - gestion des primtives géométriques GeoJSON / WKT, remplace geom2d
+title: geometry - gestion des primitives géométriques GeoJSON / WKT, remplace geom2d
 path: /geometry
 doc: |
   Définition des primitives géométriques fondées sur OGC:WKT et GeoJSON

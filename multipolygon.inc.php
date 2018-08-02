@@ -70,13 +70,32 @@ EOT;
   */
   function wkt(int $nbdigits=null):string { return 'MULTIPOLYGON'.$this; }
   
-  function filter(int $nbdigits) {
+  /*PhpDoc: methods
+  name:  proj2D
+  title: "function proj2D(): Polygon - renvoie un nouveau 2D"
+  */
+  function proj2D(): MultiPolygon {
+    $proj = [];
+    foreach ($this->geom as $pol) {
+      $proj[] = $pol->proj2D();
+    }
+    return new MultiPolygon($proj);
+  }
+
+  function filter(int $nbdigits): MultiPolygon {
     $geom = [];
     foreach ($this->geom as $polygon) {
       $filteredPolygon = $polygon->filter($nbdigits);
       $geom[] = $filteredPolygon;
     }
     return new MultiPolygon($geom);
+  }
+  
+  function area(): float {
+    $area = 0.0;
+    foreach($this->geom as $polygon)
+      $area += $polygon->area();
+    return $area;
   }
 };
 
