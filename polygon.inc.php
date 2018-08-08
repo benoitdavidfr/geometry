@@ -156,6 +156,7 @@ class Polygon extends Geometry {
   title: function filter($nbdigits) - filtre la géométrie en supprimant les points intermédiaires successifs identiques
   */
   function filter(int $nbdigits):Polygon {
+    //echo "Polygon::filter($nbdigits)\n";
     $result = [];
     foreach ($this->geom as $ls) {
       $filtered = $ls->filter($nbdigits);

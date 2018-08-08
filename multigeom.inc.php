@@ -78,7 +78,9 @@ abstract class MultiGeom extends Geometry {
   function filter(int $nbdigits): MultiGeom {
     $coll = [];
     foreach ($this->geom as $elt) {
-      $coll[] = $elt->filter($nbdigits);
+      $filtered = $elt->filter($nbdigits);
+      if ($filtered->isValid())
+        $coll[] = $filtered;
     }
     $class = get_called_class();
     return new $class ($coll);
