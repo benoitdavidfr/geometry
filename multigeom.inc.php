@@ -6,6 +6,8 @@ includes: [ geometry.inc.php ]
 classes:
 doc: |
 journal: |
+  8/8/2018:
+    ajout proj2D()
   22/10/2017:
     création
 */
@@ -52,15 +54,28 @@ abstract class MultiGeom extends Geometry {
     }
     return true;
   }
+  
+  /*PhpDoc: methods
+  name:  proj2D
+  title: "function proj2D(): MultiGeom - renvoie un nouveau 2D"
+  */
+  function proj2D(): MultiGeom {
+    $coll = [];
+    foreach ($this->geom as $elt) {
+      $coll[] = $elt->proj2D();
+    }
+    $class = get_called_class();
+    return new $class ($coll);
+  }
 
   /*PhpDoc: methods
   name:  filter
-  title: function filter(int $nbdigits) - renvoie une nouvelle collection dont chaque élément est filtré supprimant les points successifs identiques
+  title: "function filter(int $nbdigits): MultiGeom - renvoie une nouvelle collection dont chaque élément est filtré supprimant les points successifs identiques"
   doc: |
     Les coordonnées sont arrondies avec $nbdigits chiffres significatifs
     Un filtre sans arrondi n'a pas de sens.
   */
-  function filter(int $nbdigits) {
+  function filter(int $nbdigits): MultiGeom {
     $coll = [];
     foreach ($this->geom as $elt) {
       $coll[] = $elt->filter($nbdigits);

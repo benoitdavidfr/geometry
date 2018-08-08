@@ -6,6 +6,8 @@ includes: [ geometry.inc.php ]
 classes:
 doc: |
 journal: |
+  8/8/2018:
+    suppression filter() déjà définie sur MultiGeom
   22/10/2017:
     création
 */
@@ -70,18 +72,7 @@ EOT;
   */
   function wkt(int $nbdigits=null):string { return 'MULTIPOLYGON'.$this; }
   
-  /*PhpDoc: methods
-  name:  proj2D
-  title: "function proj2D(): Polygon - renvoie un nouveau 2D"
-  */
-  function proj2D(): MultiPolygon {
-    $proj = [];
-    foreach ($this->geom as $pol) {
-      $proj[] = $pol->proj2D();
-    }
-    return new MultiPolygon($proj);
-  }
-
+  /* Déjà défini sur MultiGeom
   function filter(int $nbdigits): MultiPolygon {
     $geom = [];
     foreach ($this->geom as $polygon) {
@@ -89,7 +80,7 @@ EOT;
       $geom[] = $filteredPolygon;
     }
     return new MultiPolygon($geom);
-  }
+  }*/
   
   function area(): float {
     $area = 0.0;

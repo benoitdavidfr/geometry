@@ -6,8 +6,10 @@ includes: [ geometry.inc.php ]
 functions:
 classes:
 journal: |
+  8/8/2018:
+    - correction d'un bug dans filter()
   21/10/2017:
-  - première version
+    - première version
 */
 require_once __DIR__.'/geometry.inc.php';
 /*PhpDoc: classes
@@ -131,6 +133,8 @@ class Polygon extends Geometry {
     foreach ($this->geom as $ls) {
       if (!$ls->isValid())
         return false;
+      if (count($ls->points()) < 4)
+        return false;
     }
     return true;
   }
@@ -155,7 +159,8 @@ class Polygon extends Geometry {
     $result = [];
     foreach ($this->geom as $ls) {
       $filtered = $ls->filter($nbdigits);
-      $result[] = $filtered;
+      if (count($filtered->points()) >= 4)
+        $result[] = $filtered;
     }
     return new Polygon($result);
   }

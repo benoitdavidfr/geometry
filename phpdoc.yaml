@@ -3,8 +3,11 @@ path: /geometry
 doc: |
   Définition des primitives géométriques fondées sur OGC:WKT et GeoJSON
   + chgt de syst. de coordonnées uniquement sur IAG_GRS_1980
-  Un arrondi peut être effectué au moyen de la méthode round() sur un Point/MultiPoint et filter() sur les autres primitives.
+  Un arrondi peut être effectué au moyen de la méthode round() sur un Point/MultiPoint et filter() sur
+  les autres primitives.
 journal: |
+  8/8/2018:
+    correction d'un bug dans Polygon::filter()
   17/12/2017:
     chgt de logique sur le nbre de digits des coordonnées:
       L'arrondi est effectué au moyen de la méthode round() sur un Point ou un MultiPoint et filter() sur les autres
