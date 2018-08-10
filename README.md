@@ -8,6 +8,8 @@ aux primitives géométriques :
   - 3 types de collections homogènes de géométries élémentaires: MultiPoint, MultiLineString et MultiPolygon
   - 1 type de collection hétérogène de géométries élémentaires: GeometryCollection
 
+Il définit en outre la classe CoordSys qui implémente des changements de coordonnées simples
+ainsi que la classe BBox correspondant aux boites englobantes.
 
 ### La classe abstraite Geometry
 La classe abstraite Geometry permet de gérer a minima une géométrie sans avoir à connaître son type.  
