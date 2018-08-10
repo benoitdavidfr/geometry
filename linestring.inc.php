@@ -261,7 +261,7 @@ class LineString extends Geometry {
   name:  distancePointPointList
   title: "function distancePointPointList(Point $pt): array - distance minimum d'une liste de points à un point"
   doc : |
-    Retourne la distance et le no du point qui correspond à la distance minimum
+    Retourne la distance et le no du point qui correspond à la distance minimum sous la forme ['dist'=>$dist, 'n'=>$n]
   */
   function distancePointPointList(Point $pt): array {
     for ($i=0; $i<count($this->geom); $i++) {
@@ -289,7 +289,7 @@ class LineString extends Geometry {
   name:  area
   title: "function distancePointLineString(Point $pt): array - distance minimum de la ligne brisée au point pt"
   doc : |
-    Retourne la distance et le point qui correspond à la distance minimum
+    Retourne la distance et le point qui correspond à la distance minimum sous la forme ['dmin'=>$dmin, 'pt'=>$pt]
   */
   function distancePointLineString(Point $pt): array {
     $p0 = $this->geom[0];

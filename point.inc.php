@@ -225,7 +225,7 @@ class Point extends Geometry {
 
   /*PhpDoc: methods
   name:  pvect
-  title: "function pscal(Point $va, Point $vb): float - produit scalaire"
+  title: "static function pscal(Point $va, Point $vb): float - produit scalaire"
   */
   static function pscal(Point $va, Point $vb): float { return $va->x()*$vb->x() + $va->y()*$vb->y(); }
   static function test_pscal() {

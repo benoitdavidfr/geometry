@@ -24,9 +24,9 @@ class Polygon extends Geometry {
 
   /*PhpDoc: methods
   name:  lineStrings
-  title: function lineStrings() - retourne la liste des LineStrings composant le polygone
+  title: "function lineStrings(): array - retourne la liste des LineStrings composant le polygone"
   */
-  function lineStrings() { return $this->geom; }
+  function lineStrings(): array { return $this->geom; }
     
   /*PhpDoc: methods
   name:  __construct
@@ -75,7 +75,6 @@ class Polygon extends Geometry {
       throw new Exception("Parametre non reconnu dans Polygon::__construct($param)");
   }
   
-
   static function test_new() {
     $pol = new Polygon('POLYGON((1 0,0 1,-1 0,0 -1,1 0))');
     echo "pol=$pol\n";
@@ -85,15 +84,15 @@ class Polygon extends Geometry {
   
   /*PhpDoc: methods
   name:  addHole
-  title: function addHole(LineString $hole) - aoute un trou au polygone
+  title: "function addHole(LineString $hole): void - aoute un trou au polygone"
   */
-  function addHole(LineString $hole) { $this->geom[] = $hole; }
+  function addHole(LineString $hole): void { $this->geom[] = $hole; }
   
   /*PhpDoc: methods
   name:  chgCoordSys
-  title: function chgCoordSys($src, $dest) - créée un nouveau Polygon en changeant le syst. de coord. de $src en $dest
+  title: "function chgCoordSys($src, $dest): Polygon - créée un nouveau Polygon en changeant le syst. de coord. de $src en $dest"
   */
-  function chgCoordSys($src, $dest) {
+  function chgCoordSys($src, $dest): Polygon {
     $lls = [];
     foreach ($this->geom as $ls)
       $lls[] = $ls->chgCoordSys($src, $dest);
@@ -102,15 +101,15 @@ class Polygon extends Geometry {
     
   /*PhpDoc: methods
   name:  __toString
-  title: function __toString() - affiche la liste des LineString entourée par des ()
+  title: "function __toString(): string - affiche la liste des LineString entourée par des ()"
   */
-  function __toString() { return '('.implode(',',$this->geom).')'; }
+  function __toString(): string { return '('.implode(',',$this->geom).')'; }
   
   /*PhpDoc: methods
   name:  toString
-  title: function toString($nbdigits=null) - affiche la liste des LineString entourée par des () en précisant évent. le nbre de chiffres significatifs
+  title: "function toString($nbdigits=null): string - affiche la liste des LineString entourée par des () en précisant évent. le nbre de chiffres significatifs"
   */
-  function toString(int $nbdigits=null) {
+  function toString(int $nbdigits=null): string {
     $str = '';
     foreach ($this->geom as $ls)
       $str .= ($str?',':'').$ls->toString($nbdigits);
@@ -119,13 +118,13 @@ class Polygon extends Geometry {
   
   /*PhpDoc: methods
   name:  bbox
-  title: function bbox() - calcul du rectangle englobant
+  title: "function bbox(): BBox - calcul du rectangle englobant"
   */
-  function bbox():BBox { return $this->geom[0]->bbox(); }
+  function bbox(): BBox { return $this->geom[0]->bbox(); }
   
   /*PhpDoc: methods
   name:  isValid
-  title: "function isValid(): bool - renvoie booléen"
+  title: "function isValid(): bool - renvoie vrai ssi l'objet est correct"
   */
   function isValid(): bool {
     if (count($this->geom) == 0)
@@ -153,9 +152,9 @@ class Polygon extends Geometry {
 
   /*PhpDoc: methods
   name:  filter
-  title: function filter($nbdigits) - filtre la géométrie en supprimant les points intermédiaires successifs identiques
+  title: "function filter($nbdigits): Polygon - filtre la géométrie en supprimant les points intermédiaires successifs identiques"
   */
-  function filter(int $nbdigits):Polygon {
+  function filter(int $nbdigits): Polygon {
     //echo "Polygon::filter($nbdigits)\n";
     $result = [];
     foreach ($this->geom as $ls) {
@@ -166,11 +165,12 @@ class Polygon extends Geometry {
     return new Polygon($result);
   }
   
-  function isDegenerated(): bool { return (count($this->geom[0]) < 4); }
+  // A SUPPRIMER, redondant avec isValid() et faux
+  //function isDegenerated(): bool { return (count($this->geom[0]) < 4); }
   
   /*PhpDoc: methods
   name:  coordinates
-  title: function coordinates() - renvoie les coordonnées come [ [ [ num ] ] ]
+  title: "function coordinates(): array - renvoie les coordonnées comme [ [ [ num ] ] ]"
   */
   function coordinates():array {
     $coordinates = [];
@@ -189,7 +189,7 @@ class Polygon extends Geometry {
   
   /*PhpDoc: methods
   name:  area
-  title: function area($options=[]) - renvoie la surface dans le système de coordonnées courant
+  title: "function area($options=[]): float - renvoie la surface dans le système de coordonnées courant"
   doc: |
     Par défaut, l'extérieur et les intérieurs tournent dans des sens différents.
     La surface est positive si l'extérieur tourne dans le sens trigonométrique, <0 sinon.
@@ -221,7 +221,7 @@ class Polygon extends Geometry {
   
   /*PhpDoc: methods
   name:  pointInPolygon
-  title: pointInPolygon(Point $pt) - teste si un point pt est dans le polygone
+  title: "pointInPolygon(Point $pt): bool - teste si un point pt est dans le polygone"
   */
   function pointInPolygon(Point $pt):bool {
     $c = false;

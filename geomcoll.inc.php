@@ -78,9 +78,9 @@ EOT;
   
   /*PhpDoc: methods
   name:  filter
-  title: function filter($nbdigits) - filtre la géométrie en supprimant les points intermédiaires successifs identiques
+  title: "function filter(int $nbdigits): GeometryCollection - filtre la géométrie en supprimant les points intermédiaires successifs identiques"
   */
-  function filter($nbdigits) {
+  function filter(int $nbdigits): GeometryCollection {
     $called_class = get_called_class();
     $collection = [];
     foreach ($this->geom as $geom) {
@@ -89,14 +89,14 @@ EOT;
 //      echo "filtered=$filtered<br>\n";
       $collection[] = $filtered;
     }
-    return new $called_class($collection);
+    return new GeometryCollection($collection);
   }
   
   /*PhpDoc: methods
   name:  __toString
-  title: function __toString() - génère une chaine de caractère correspondant au WKT sans l'entete
+  title: "function __toString(): string - génère une chaine de caractère correspondant au WKT sans l'entete"
   */
-  function __toString() {
+  function __toString(): string {
     $str = '';
     foreach($this->geom as $geom)
       $str .= ($str?',':'').$geom->wkt();
@@ -105,26 +105,26 @@ EOT;
   
   /*PhpDoc: methods
   name:  chgCoordSys
-  title: function chgCoordSys($src, $dest) - créée un nouveau GeomCollection en changeant le syst. de coord. de $src en $dest
+  title: "function chgCoordSys($src, $dest): GeometryCollection - créée un nouveau GeomCollection en changeant le syst. de coord. de $src en $dest"
   */
-  function chgCoordSys($src, $dest) {
+  function chgCoordSys($src, $dest): GeometryCollection {
     $called_class = get_called_class();
 //    echo "get_called_class=",get_called_class(),"<br>\n";
     $collection = [];
     foreach($this->collection as $geom)
       $collection[] = $geom->chgCoordSys($src, $dest);
-    return new $called_class($collection);
+    return new GeometryCollection($collection);
   }
     
   /*PhpDoc: methods
   name:  wkt
-  title: function wkt() - génère une chaine de caractère correspondant au WKT avec l'entete
+  title: "function wkt(int $nbdigits=null):string- génère une chaine de caractère correspondant au WKT avec l'entete"
   */
   function wkt(int $nbdigits=null):string { return 'GEOMETRYCOLLECTION'.$this; }
   
   /*PhpDoc: methods
   name:  geojsonGeometry
-  title: function geojsonGeometry() - retourne un tableau Php qui encodé en JSON correspondra à la geometry GeoJSON
+  title: "function geojson():array - retourne un tableau Php qui encodé en JSON correspondra à la geometry GeoJSON"
   */
   function geojson():array {
     $geometries = [];
@@ -138,9 +138,9 @@ EOT;
   
   /*PhpDoc: methods
   name:  draw
-  title: function draw() - itère l'appel de draw sur chaque élément
+  title: "function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2): void  - itère l'appel de draw sur chaque élément"
   */
-  function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2) {
+  function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2): void {
     foreach($this->collection as $geom)
       $geom->draw($drawing, $stroke, $fill, $stroke_with);
   }
