@@ -1,4 +1,4 @@
-# Package de gestion de la géométrie
+# Package Php de gestion de la géométrie
 
 Ce package Php implémente les primitives géométriques GeoJSON et OGC WKT sous la forme de classes Php.  
 Il définit une classe abstraite Geometry ainsi que les 7 sous-classes suivantes correspondant
@@ -11,25 +11,43 @@ aux primitives géométriques :
 
 ### La classe abstraite Geometry
 La classe abstraite Geometry permet de gérer a minima une géométrie sans avoir à connaître son type.  
+
+#### Méthodes
 Elle définit :
   
   - 2 méthodes statiques de construction d'objet à partir respectivement d'un WKT ou d'un GeoJSON :
-      - `static function fromWkt(string $wkt, int $nbdigits=null): Geometry` - crée une géométrie à partir d'un WKT
-      - `static function fromGeoJSON(array $geometry, int $nbdigits=null): Geometry` - crée une géométrie
+      - `static fromWkt(string $wkt, int $nbdigits=null): Geometry` - crée une géométrie à partir d'un WKT
+      - `static fromGeoJSON(array $geometry, int $nbdigits=null): Geometry` - crée une géométrie
         à partir d'une géométrie GeoJSON
-  - la méthode générique `geojson(): array` qui génère une représentation GeoJSON comme Array Php
-    qui encodé en JSON correspondra à la geometry GeoJSON
+  - la méthode générique `geojson(): array` qui génère comme Array Php qui, encodé en JSON,
+    correspondra à la geometry GeoJSON
   - la méthode `wkt(): string` qui fabrique une représentations WKT
   - la méthode `bbox(): BBox` qui fabrique le BBox de l'objet
+  
+### La classe CoordSys
+La classe statique CoordSys implémente les changements simples entre systèmes de coordonnées
+définis sur l'elliposide IAG_GRS_1980.
+Les systèmes de coordonnées suivants sont gérés :
+
+  - 'geo' pour coordonnées géographiques WGS 84 en degrés décimaux
+  - 'L93' pour Lambert 93
+  - 'WM' pour web Mercator
+  - UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'
+
+#### Méthodes
+
+  - `static detect($opengiswkt)` - detecte le système de coord exprimé en Well Known Text d'OpenGIS
+  - `static chg(string $src, string $dest, number $x, number $y): array` - chg de syst. de coord. de $src vers $dest
+    renvoie un tableau de 2 coordonnées. Les couples acceptés sont 'geo',proj et proj,'geo'
   
 ### La classe Point
 La classe Point implémente la primtive Point en 2D ou 3D et dans certains cas à un vecteur.
 
 #### Méthodes
 
-  - `__construct($param)` - construction à partir d'un WKT ou d'un [num, num {, num}]
-  - `x()` - accès à la première coordonnée
-  - `y()` - accès à la seconde coordonnée
+  - `__construct($param)` - construction à partir d'un WKT ou d'un [number, number {, number}]
+  - `x(): number` - accès à la première coordonnée
+  - `y(): number` - accès à la seconde coordonnée
   - `isValid(): bool` - renvoie vrai ssi l'objet est valide
   - `round(int $nbdigits): Point` - arrondit un point avec le nb de chiffres indiqués
   - `filter(int $nbdigits): Point` - synonyme de round()
@@ -60,6 +78,32 @@ La classe Point implémente la primtive Point en 2D ou 3D et dans certains cas �
     S'il s'intersectent, retourne le pt ainsi que les abscisses u et v  
     Si les 2 segments sont parallèles, alors retourne null même s'ils sont partiellement confondus
     
+### La classe BBox
+La classe BBox gère les boites englobantes.  
+Une boite peut ne contenir aucun point ; dans ce cas min et max contiennent la valeur null.
+On dit qu'elle est indéterminée.
+Si une boite n'est pas indéterminée alors min et max contiennent chacun un point.
+
+#### Méthodes
+
+  - `__construct($param=null)` - initialise une boite en fonction du paramètre
+  - `__toString(): string` - affiche les 2 points entourées de []
+  - `min(): ?Point` - renvoie le point min
+  - `max(): ?Point` - renvoie le point max
+  - `bound(Point $pt): BBox` - agrandit la boite pour contenir le point et la renvoie
+  - `union(BBox $bbox): BBox` - Agrandit la boite courante pour contenir la boite en paramètre et la renvoie
+  - `size(): float` - longueur de la diagonale
+  - `area(): float` - surface de la boite
+  - `mindist(BBox $r1): float` - calcul du minimum les distances entre les points de 2 boites
+  - `inters(BBox $bbox1): float` - calcul du rapport de l'intersection des 2 boites sur le maximum des surfaces des 2 boites
+  - `isIncludedIn(BBox $bbox1):bool` - teste si this est inclus dans bbox1
+  - `asPolygon(): Polygon` - renvoie la bbox comme Polygon
+  - `asArray(): array` - renvoie [xmin, ymin, xmax, ymax] ou null
+  - `chgCoordSys(string $src, string $dest): BBox` - crée un nouveau BBox en changeant le syst. de coord. de $src en $dest
+  - `pointInBBox(Point $pt): bool` - teste si un point est dans un BBox
+  - `edges(): array` - retourne les 4 côtés sous la forme de couple de points
+  - `corner(int $no)` - retourne un des 4 coins : 0=>SW, 1=>SE, ... 
+
 ### La classe LineString
 La classe LineString implémente la primtive LineString en 2D ou 3D correspondant à une liste brisée.
 
