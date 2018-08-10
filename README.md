@@ -31,7 +31,7 @@ La classe statique CoordSys implémente les changements simples entre systèmes 
 définis sur l'elliposide IAG_GRS_1980.
 Les systèmes de coordonnées suivants sont gérés :
 
-  - 'geo' pour coordonnées géographiques WGS 84 en degrés décimaux
+  - 'geo' pour coordonnées géographiques WGS 84 en degrés décimaux dans l'ordre longitude, lattitude
   - 'L93' pour Lambert 93
   - 'WM' pour web Mercator
   - UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'
