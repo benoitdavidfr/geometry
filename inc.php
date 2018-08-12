@@ -14,3 +14,4 @@ require_once __DIR__.'/multipoint.inc.php';
 require_once __DIR__.'/multilinestring.inc.php';
 require_once __DIR__.'/multipolygon.inc.php';
 require_once __DIR__.'/geomcoll.inc.php';
+require_once __DIR__.'/wkt2geojson.inc.php';

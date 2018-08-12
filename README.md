@@ -1,6 +1,7 @@
 # Package Php de gestion de la géométrie
 
-Ce package Php implémente les primitives géométriques GeoJSON et OGC WKT sous la forme de classes Php.  
+Ce package Php implémente les primitives géométriques [GeoJSON](https://tools.ietf.org/html/rfc7946)
+et [OGC WKT](https://en.wikipedia.org/wiki/Well-known_text) sous la forme de classes Php.  
 Il définit une classe abstraite Geometry ainsi que les 7 sous-classes suivantes correspondant
 aux primitives géométriques :
   
@@ -204,3 +205,12 @@ d'objets élémentaires.
   - `wkt(): string` - génère une chaine de caractère correspondant au WKT avec l'entete
   - `geojson(): array` - retourne un tableau Php qui encodé en JSON correspondra à la geometry GeoJSON
   - `function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2): void` - itère l'appel de draw sur chaque élément 
+
+### La classe Wkt2GeoJson
+La classe Wkt2GeoJson implémente la transformation WKT en GeoJSON de manière optimisée,
+ce qui est nécessaire pour les objets volumineux.
+La transformation ne crée aucune copie du $wkt afin d'optimiser la gestion mémoire.
+De plus, elle utilise ni preg_match() ni preg_replace().
+
+### Méthodes
+  - `static convert(string $wkt): array` - prend un WKT et renvoie un array correspondant à un GeoJSON

@@ -6,6 +6,8 @@ doc: |
   Un arrondi peut être effectué au moyen de la méthode round() sur un Point/MultiPoint et filter() sur
   les autres primitives.
 journal: |
+  11/8/2018:
+    ajout wkt2geojson.inc.php
   8/8/2018:
     correction d'un bug dans Polygon::filter()
   17/12/2017:
@@ -33,3 +35,4 @@ phpIncludes:
   - /geometry/multilinestring.inc.php
   - /geometry/multipolygon.inc.php
   - /geometry/geomcoll.inc.php
+  - /geometry/wkt2geojson.inc.php
