@@ -6,7 +6,9 @@ classes:
 doc: |
   Implémentation performance de la transformation WKT en GeoJSON
 journal: |
-  11/8/2018
+  14/8/2018:
+    ajout du paramètre shift pour générer les objets de l'autre côté de l'anti-méridien
+  12/8/2018
   - première version
 */
 /*PhpDoc: classes
@@ -20,41 +22,42 @@ doc: |
 */
 class Wkt2GeoJson {
   // génère à la volée un GeoJSON à partir d'un WKT
-  static function convert(string $wkt): array {
+  // shift vaut 0 -360.0 ou +360.0 pour générer les objets de l'autre côté de l'anti-méridien
+  static function convert(string $wkt, float $shift): array {
     //echo "wkt=$wkt<br>\n";
     if (substr($wkt, 0, 6)=='POINT(') {
       $pos = 6;
-      return ['type'=>'Point', 'coordinates'=> self::parseListPoints($wkt, $pos)[0]];
+      return ['type'=>'Point', 'coordinates'=> self::parseListPoints($wkt, $pos, $shift)[0]];
     }
     elseif (substr($wkt, 0, 11)=='LINESTRING(') {
       $pos = 11;
-      return ['type'=>'LineString', 'coordinates'=> self::parseListPoints($wkt, $pos)];
+      return ['type'=>'LineString', 'coordinates'=> self::parseListPoints($wkt, $pos, $shift)];
     }
     elseif (substr($wkt, 0, 16)=='MULTILINESTRING(') {
       $pos = 16;
-      return ['type'=>'MultiLineString', 'coordinates'=> self::parsePolygon($wkt, $pos)];
+      return ['type'=>'MultiLineString', 'coordinates'=> self::parsePolygon($wkt, $pos, $shift)];
     }
     elseif (substr($wkt, 0, 8)=='POLYGON(') {
       $pos = 8;
-      return ['type'=>'Polygon', 'coordinates'=> self::parsePolygon($wkt, $pos)];
+      return ['type'=>'Polygon', 'coordinates'=> self::parsePolygon($wkt, $pos, $shift)];
     }
     elseif (substr($wkt, 0, 13)=='MULTIPOLYGON(') {
       $pos = 13;
-      return ['type'=>'MultiPolygon', 'coordinates'=> self::parseMultiPolygon($wkt, $pos)];
+      return ['type'=>'MultiPolygon', 'coordinates'=> self::parseMultiPolygon($wkt, $pos, $shift)];
     }
     else
       die("erreur Wkt2GeoJson::convert(), wkt=$wkt");
   }
   
   // traite le MultiPolygon
-  private static function parseMultiPolygon(string $wkt, int &$pos): array {
+  private static function parseMultiPolygon(string $wkt, int &$pos, float $shift): array {
     //echo "parseMultiPolygon($wkt)<br>\n";
     $geom = [];
     $n = 0;
     while ($pos < strlen($wkt)) {
       if (substr($wkt, $pos, 1) == '(') {
         $pos++;
-        $geom[$n] = self::parsePolygon($wkt, $pos);
+        $geom[$n] = self::parsePolygon($wkt, $pos, $shift);
         $n++;
         //echo "left parseMultiPolygon 1=$wkt<br>\n";
         if (substr($wkt, $pos, 1) == ',') {
@@ -75,17 +78,17 @@ class Wkt2GeoJson {
   }
   
   // consomme une liste de points entourée d'une paire de parenthèses + parenthèse fermante
-  private static function parsePolygon(string $wkt, int &$pos): array {
+  private static function parsePolygon(string $wkt, int &$pos, float $shift): array {
     $geom = [];
     $n = 0;
     while($pos < strlen($wkt)) {
       if (substr($wkt, $pos, 1) == '(') {
         $pos++;
-        $geom[$n++] = self::parseListPoints($wkt, $pos);
+        $geom[$n++] = self::parseListPoints($wkt, $pos, $shift);
       }
       elseif (substr($wkt, $pos, 3) == '),(') {
         $pos += 3;
-        $geom[$n++] = self::parseListPoints($wkt, $pos);
+        $geom[$n++] = self::parseListPoints($wkt, $pos, $shift);
       }
       elseif (substr($wkt, $pos, 2) == '))') {
         $pos += 2;
@@ -115,18 +118,18 @@ class Wkt2GeoJson {
   
   // consomme une liste de points sans parenthèses - version optimisée
   // à la fin pos pointe sur la ')'
-  private static function parseListPoints(string $wkt, int &$pos): array {
+  private static function parseListPoints(string $wkt, int &$pos, float $shift): array {
     $points = [];
     while ($pos < strlen($wkt)) {
       $len = strcspn($wkt, ' ', $pos);
-      $x = substr($wkt, $pos, $len);
+      $lng = substr($wkt, $pos, $len);
       //echo "len=$len, wkt='$wkt', pos=$pos, x=$x\n"; die();
       $pos += $len+1;
       $len = strcspn($wkt, '),', $pos);
-      $y = substr($wkt, $pos, $len);
+      $lat = substr($wkt, $pos, $len);
       $pos += $len;
       //echo "len=$len, wkt='$wkt', pos=$pos, x=$x, y=$y\n"; //die();
-      $points[] = [(float)$x, (float)$y];
+      $points[] = [(float)$lng + $shift, (float)$lat];
       //print_r($points);
       //echo 'fin=',substr($wkt, $pos, 1),"\n"; //die();
       if (substr($wkt, $pos, 1)==')')
