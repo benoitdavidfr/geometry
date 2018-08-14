@@ -22,8 +22,8 @@ doc: |
 */
 class Wkt2GeoJson {
   // génère à la volée un GeoJSON à partir d'un WKT
-  // shift vaut 0 -360.0 ou +360.0 pour générer les objets de l'autre côté de l'anti-méridien
-  static function convert(string $wkt, float $shift): array {
+  // shift vaut 0.0, -360.0 ou +360.0 pour générer les objets de l'autre côté de l'anti-méridien
+  static function convert(string $wkt, float $shift=0.0): array {
     //echo "wkt=$wkt<br>\n";
     if (substr($wkt, 0, 6)=='POINT(') {
       $pos = 6;

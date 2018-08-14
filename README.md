@@ -213,4 +213,4 @@ La transformation ne crée aucune copie du $wkt afin d'optimiser la gestion mém
 De plus, elle utilise ni preg_match() ni preg_replace().
 
 ### Méthodes
-  - `static convert(string $wkt): array` - prend un WKT et renvoie un array correspondant à un GeoJSON
+  - `static convert(string $wkt, float $shift=0.0): array` - prend un WKT et renvoie un array correspondant à un GeoJSON, $shift est un décalage à appliquer en latitude, il vaut normalement 0, -360.0 ou +360.0
