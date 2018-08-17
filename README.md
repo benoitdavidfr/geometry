@@ -2,21 +2,24 @@
 
 Ce package Php implémente les primitives géométriques [GeoJSON](https://tools.ietf.org/html/rfc7946)
 et [OGC WKT](https://en.wikipedia.org/wiki/Well-known_text) sous la forme de classes Php.  
-Il définit une classe abstraite Geometry ainsi que les 7 sous-classes suivantes correspondant
+Il comprend une classe abstraite Geometry ainsi que les 7 sous-classes suivantes correspondant
 aux primitives géométriques :
   
   - 3 types géométriques élémentaires: Point, LineString et Polygon
   - 3 types de collections homogènes de géométries élémentaires: MultiPoint, MultiLineString et MultiPolygon
   - 1 type de collection hétérogène de géométries élémentaires: GeometryCollection
 
-Il définit en outre la classe CoordSys qui implémente des changements de coordonnées simples
-ainsi que la classe BBox correspondant aux boites englobantes.
+Il comprend en outre :
+
+  - la classe CoordSys qui implémente des changements de coordonnées simples,
+  - la classe BBox qui implémente les boites englobantes,
+  - la classe statique Wkt2GeoJson qui implémente la transformation d'une primitive WKT en GeoJSON
+    de manière optimisée.
 
 ### La classe abstraite Geometry
 La classe abstraite Geometry permet de gérer a minima une géométrie sans avoir à connaître son type.  
 
 #### Méthodes
-Elle définit :
   
   - 2 méthodes statiques de construction d'objet à partir respectivement d'un WKT ou d'un GeoJSON :
       - `static fromWkt(string $wkt, int $nbdigits=null): Geometry` - crée une géométrie à partir d'un WKT
@@ -206,8 +209,8 @@ d'objets élémentaires.
   - `geojson(): array` - retourne un tableau Php qui encodé en JSON correspondra à la geometry GeoJSON
   - `function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2): void` - itère l'appel de draw sur chaque élément 
 
-### La classe Wkt2GeoJson
-La classe Wkt2GeoJson implémente la transformation WKT en GeoJSON de manière optimisée,
+### La classe statique Wkt2GeoJson
+La classe statique Wkt2GeoJson implémente la transformation WKT en GeoJSON de manière optimisée,
 ce qui est nécessaire pour les objets volumineux.
 La transformation ne crée aucune copie du $wkt afin d'optimiser la gestion mémoire.
 De plus, elle utilise ni preg_match() ni preg_replace().
