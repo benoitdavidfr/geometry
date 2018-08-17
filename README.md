@@ -13,11 +13,11 @@ Il comprend en outre :
 
   - la classe CoordSys qui implémente des changements de coordonnées simples,
   - la classe BBox qui implémente les boites englobantes,
-  - la classe statique Wkt2GeoJson qui implémente la transformation d'une primitive WKT en GeoJSON
-    de manière optimisée.
+  - la classe statique Wkt2GeoJson qui implémente une transformation optimisée d'une primitive WKT en GeoJSON.
 
 ### La classe abstraite Geometry
-La classe abstraite Geometry permet de gérer a minima une géométrie sans avoir à connaître son type.  
+La classe abstraite Geometry permet de gérer a minima une géométrie sans avoir à connaître son type.
+Elle comporte les méthodes suivantes.
 
 #### Méthodes
   
