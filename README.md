@@ -27,15 +27,15 @@ Elle comporte les méthodes suivantes.
         à partir d'une géométrie GeoJSON
   - la méthode générique `geojson(): array` qui génère comme Array Php qui, encodé en JSON,
     correspondra à la geometry GeoJSON
-  - la méthode `wkt(): string` qui fabrique une représentations WKT
+  - la méthode `wkt(): string` qui fabrique une représentation WKT
   - la méthode `bbox(): BBox` qui fabrique le BBox de l'objet
   
 ### La classe CoordSys
-La classe statique CoordSys implémente les changements simples entre systèmes de coordonnées
-définis sur l'elliposide IAG_GRS_1980.
+La classe statique CoordSys implémente les changements simples entre coordonnées en projection et coordonnées
+géographiques, et vice-versa, définis sur l'elliposide IAG_GRS_1980.
 Les systèmes de coordonnées suivants sont gérés :
 
-  - 'geo' pour coordonnées géographiques WGS 84 en degrés décimaux dans l'ordre longitude, lattitude
+  - 'geo' pour coordonnées géographiques WGS 84 en degrés décimaux dans l'ordre longitude, latitude
   - 'L93' pour Lambert 93
   - 'WM' pour web Mercator
   - UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'
@@ -47,11 +47,12 @@ Les systèmes de coordonnées suivants sont gérés :
     renvoie un tableau de 2 coordonnées. Les couples acceptés sont 'geo',proj et proj,'geo'
   
 ### La classe Point
-La classe Point implémente la primtive Point en 2D ou 3D et dans certains cas à un vecteur.
+La classe Point implémente la primtive Point en 2D ou 3D ;
+pour certaines méthodes l'objet est considéré comme un vecteur.
 
 #### Méthodes
 
-  - `__construct($param)` - construction à partir d'un WKT ou d'un [number, number {, number}]
+  - `__construct($param)` - construction à partir d'un WKT ou d'un array [number, number {, number}]
   - `x(): number` - accès à la première coordonnée
   - `y(): number` - accès à la seconde coordonnée
   - `isValid(): bool` - renvoie vrai ssi l'objet est valide
@@ -60,14 +61,14 @@ La classe Point implémente la primtive Point en 2D ou 3D et dans certains cas �
   - `proj2D(): Point` - projection 2D, supprime l'éventuelle 3ème coordonnée
   -  `__toString(): string` - affichage des coordonnées séparées par un blanc
   - `wkt($nbdigits=null): string` - retourne la chaine WKT
-  -  `bbox(): BBox` - calcule la bbox
+  -  `bbox(): BBox` - renvoie la bbox
   - `drawCircle(Drawing $drawing, $r, $fill): void` - dessine un cercle centré sur le point de rayon r
     dans la couleur indiquée
-  - `distance(): float` - retourne la distance euclidienne entre 2 points
+  - `distance(): float` - retourne la norme du vecteur, cad la distance euclidienne entre 2 points
   - `chgCoordSys($src, $dest): Point` - crée un nouveau Point en changeant le syst. de coord. de $src en $dest
   - `coordinates(): array` - renvoie les coordonnées sous la forme [ number, number {, number} ]
   - `vectLength(): float` - renvoie la norme du vecteur
-  - `static substract(Point $p0, Point $p): Point` - différence $p - $p0
+  - `static substract(Point $p0, Point $p): Point` - différence $p - $p0, fournit un vecteur
   - `static add(Point $a, Point $b): Point` - somme $a + $b
   - `static scalMult($u, Point $v): Point` - multiplication du vecteur $v par le scalaire $u
   - `static pvect(Point $va, Point $vb): float` - produit vectoriel
@@ -85,14 +86,18 @@ La classe Point implémente la primtive Point en 2D ou 3D et dans certains cas �
     Si les 2 segments sont parallèles, alors retourne null même s'ils sont partiellement confondus
     
 ### La classe BBox
-La classe BBox gère les boites englobantes.  
+La classe BBox gère les boites englobantes définies par 2 points min et max.  
 Une boite peut ne contenir aucun point ; dans ce cas min et max contiennent la valeur null.
 On dit qu'elle est indéterminée.
 Si une boite n'est pas indéterminée alors min et max contiennent chacun un point.
 
 #### Méthodes
 
-  - `__construct($param=null)` - initialise une boite en fonction du paramètre
+  - `__construct($param=null)` - initialise une boite en fonction du paramètre.  
+    Sans paramètre la boite est initialisée indéterminée.  
+    Si le paramètre est une chaine de la forme "nombre,nombre" alors min et max valent le point indiqué.  
+    Si la chaine est de la forme "nombre,nombre,nombre,nombre" alors min correspond aux 2 premières valeurs et
+    max aux deux suivantes..
   - `__toString(): string` - affiche les 2 points entourées de []
   - `min(): ?Point` - renvoie le point min
   - `max(): ?Point` - renvoie le point max
@@ -210,8 +215,8 @@ d'objets élémentaires.
   - `function draw($drawing, $stroke='black', $fill='transparent', $stroke_with=2): void` - itère l'appel de draw sur chaque élément 
 
 ### La classe statique Wkt2GeoJson
-La classe statique Wkt2GeoJson implémente la transformation WKT en GeoJSON de manière optimisée,
-ce qui est nécessaire pour les objets volumineux.
+La classe statique Wkt2GeoJson implémente une transformation optimisée d'une représentation WKT en GeoJSON,
+nécessaire pour les objets volumineux.
 La transformation ne crée aucune copie du $wkt afin d'optimiser la gestion mémoire.
 De plus, elle utilise ni preg_match() ni preg_replace().
 
