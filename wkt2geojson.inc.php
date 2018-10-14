@@ -13,7 +13,7 @@ journal: |
 */
 /*PhpDoc: classes
 name:  Wkt2GeoJson
-title: class Wkt2GeoJson - classe statique portant la méthode convert(string $wkt): array
+title: "class Wkt2GeoJson - classe statique portant la méthode convert(string $wkt): array"
 methods:
 doc: |
   La méthode convert() ne crée pas de copie du $wkt afin d'optimiser la gestion mémoire.

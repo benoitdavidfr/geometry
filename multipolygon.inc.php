@@ -6,6 +6,8 @@ includes: [ geometry.inc.php ]
 classes:
 doc: |
 journal: |
+  14/10/2018:
+    ajout chgCoordSys()
   8/8/2018:
     suppression filter() déjà définie sur MultiGeom
   22/10/2017:
@@ -64,6 +66,17 @@ EOT;
     echo "multipolygon=$mp\n";
     echo "wkt=",$mp->wkt(),"\n";
     echo "GeoJSON:",json_encode($mp->geojson()),"\n";
+  }
+  
+  /*PhpDoc: methods
+  name:  chgCoordSys
+  title: "function chgCoordSys($src, $dest): MultiPolygon - créée un nouveau MultiPolygon en changeant le syst. de coord. de $src en $dest"
+  */
+  function chgCoordSys($src, $dest): MultiPolygon {
+    $pols = [];
+    foreach ($this->geom as $pol)
+      $pols[] = $pol->chgCoordSys($src, $dest);
+    return new MultiPolygon($pols);
   }
   
   /*PhpDoc: methods

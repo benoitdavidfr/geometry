@@ -3,7 +3,7 @@
 Ce package Php implémente les primitives géométriques [GeoJSON](https://tools.ietf.org/html/rfc7946)
 et [OGC WKT](https://en.wikipedia.org/wiki/Well-known_text) sous la forme de classes Php.  
 Il comprend une classe abstraite Geometry ainsi que les 7 sous-classes suivantes correspondant
-aux primitives géométriques :
+aux différentes primitives géométriques :
   
   - 3 types géométriques élémentaires: Point, LineString et Polygon
   - 3 types de collections homogènes de géométries élémentaires: MultiPoint, MultiLineString et MultiPolygon

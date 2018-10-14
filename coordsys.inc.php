@@ -9,6 +9,9 @@ doc: |
   Implémente les projections Lambert93, WebMercator et UTM uniquement sur l'ellipsoide IAG_GRS_1980
   Le Web Mercator est défini dans:
   http://earth-info.nga.mil/GandG/wgs84/web_mercator/(U)%20NGA_SIG_0011_1.0.0_WEBMERC.pdf
+
+  Ajouter la projection sinusoidale qui est unique et équivalente
+  https://fr.wikipedia.org/wiki/Projection_sinuso%C3%AFdale
 journal: |
   22/110/2017:
     intégration dans geometry
@@ -31,7 +34,7 @@ title: Class CoordSys - classe statique contenant les fonctions de proj et inver
 methods:
 doc: |
   La classe est prévue pour gérer un nombre limité de codes, à priori:
-  - 'geo' pour coordonnées géographiques en degrés décimaux
+  - 'geo' pour coordonnées géographiques longitude, latitude en degrés décimaux
   - 'L93' pour Lambert 93
   - 'WM' pour web Mercator
   - UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'

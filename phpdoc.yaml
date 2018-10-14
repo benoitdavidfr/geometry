@@ -38,3 +38,4 @@ phpIncludes:
   - /geometry/multipolygon.inc.php
   - /geometry/geomcoll.inc.php
   - /geometry/wkt2geojson.inc.php
+  - /geometry/wfs2geojson.inc.php
