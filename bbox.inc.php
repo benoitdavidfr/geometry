@@ -8,6 +8,9 @@ doc: |
   Fonctions de gestion des boites englobantes
 doc: |
 journal: |
+  3/11/2018:
+  - ajout types
+  - 
   21/10/2017:
   - première version
 */
@@ -51,10 +54,10 @@ class BBox {
       return;
     $coord = explode(',', $param);
     //var_dump($coord);
-    if ((count($coord) == 2) and is_numeric($coord[0]) and is_numeric($coord[1]))
+    if ((count($coord) == 2) && is_numeric($coord[0]) && is_numeric($coord[1]))
       $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
-    elseif ((count($coord) == 4) and is_numeric($coord[0]) and is_numeric($coord[1])
-             and is_numeric($coord[2]) and is_numeric($coord[3])) {
+    elseif ((count($coord) == 4) && is_numeric($coord[0]) && is_numeric($coord[1])
+             && is_numeric($coord[2]) && is_numeric($coord[3])) {
       $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
       $this->bound(new Point([$coord[2]+0, $coord[3]+0]));
     }
@@ -63,25 +66,25 @@ class BBox {
   }
   
   // Renvoie vrai ssi la BBox est indéterminée
-  function undetermined() { return $this->min===null; }
+  function undetermined(): bool { return $this->min===null; }
   
   /*PhpDoc: methods
   name:  __toString
   title: function __toString() - affiche les 2 points entourées de []
   */
-  function __toString() { return ($this->undetermined() ? '[]' : '['.$this->min.','.$this->max.']'); }
+  function __toString(): string { return ($this->undetermined() ? '[]' : '['.$this->min.','.$this->max.']'); }
   
   /*PhpDoc: methods
   name:  min
   title: function min() - renvoie le point min
   */
-  function min() { return $this->min; }
+  function min(): Point { return $this->min; }
   
   /*PhpDoc: methods
   name:  max
   title: function max() - renvoie le point max
   */
-  function max() { return $this->max; }
+  function max(): Point { return $this->max; }
   
   /*PhpDoc: methods
   name:  bound
@@ -102,7 +105,7 @@ class BBox {
   name:  union
   title: function union(BBox $bbox) - Agrandit la boite courante pour contenir la boite en paramètre et la renvoie
   */
-  function union(BBox $bbox) {
+  function union(BBox $bbox): BBox {
     if ($bbox->min===null)
       return $this;
     $this->bound($bbox->min);
@@ -247,7 +250,7 @@ class BBox {
   doc: |
     L'algorithme n'est pas strictement correct.
   */
-  function chgCoordSys(string $src, string $dest) {
+  function chgCoordSys(string $src, string $dest): BBox {
     if ($this->min===null)
       return $this;
     $min = $this->min->chgCoordSys($src, $dest);
@@ -264,9 +267,9 @@ class BBox {
   doc: |
     Par convention les points sur une des frontières Ouest ou Sud appartiennent alors que les autres n'appartiennent pas
   */
-  function pointInBBox(Point $pt) {
-    return (($pt->x() >= $this->min->x()) and ($pt->y() >= $this->min->y())
-        and ($pt->x() < $this->max->x()) and ($pt->y() < $this->max->y()));
+  function pointInBBox(Point $pt): bool {
+    return (($pt->x() >= $this->min->x()) && ($pt->y() >= $this->min->y())
+        && ($pt->x() < $this->max->x()) && ($pt->y() < $this->max->y()));
   }
   
   /*PhpDoc: methods
@@ -290,7 +293,7 @@ class BBox {
   name:  corner
   title: "function corner($no) - retourne un des 4 coins : 0=>SW, 1=>SE, ..."
   */
-  function corner($no): Point {
+  function corner(int $no): Point {
     switch($no) {
       case 0 : return $this->min(); // coin SW
       case 1 : return new Point(['x'=>$this->max->x(), 'y'=>$this->min->y()]); // coin SE

@@ -13,7 +13,10 @@ doc: |
   Ajouter la projection sinusoidale qui est unique et équivalente
   https://fr.wikipedia.org/wiki/Projection_sinuso%C3%AFdale
 journal: |
-  22/110/2017:
+  4/11/2018:
+    chgt du code WM en WebMercator
+    ajout de WordMercator sous le code WorldMercator
+  22/11/2017:
     intégration dans geometry
   14-15/12/2016
   - ajout de l'UTM
@@ -36,10 +39,11 @@ doc: |
   La classe est prévue pour gérer un nombre limité de codes, à priori:
   - 'geo' pour coordonnées géographiques longitude, latitude en degrés décimaux
   - 'L93' pour Lambert 93
-  - 'WM' pour web Mercator
-  - UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'
-  Les chgt de système peuvent être effectués au travers de la méthode statique chg() ou directement au travers des méthodes
-  de changement.
+  - 'WebMercator' pour web Mercator
+  - 'WorldMercator' pour world Mercator
+  - 'UTM-ddX' où dd est le numéro de zone et X est soit 'N', soit 'S'
+  Les chgt de système peuvent être effectués au travers de la méthode statique chg() ou directement au travers
+  des méthodes de changement.
   La classe porte les constantes définies pour l'elliposide IAG_GRS_1980 utilisée pour WGS84
   Dans les calculs, l'ellipsoide peut être changé à ce niveau.
   Cette possibilité est utilisée pour vérifier le code par rapport à l'exemple du rapport USGS fondé sur l'ellipsoide de Clarke1866
@@ -117,10 +121,14 @@ doc: |
         return Lambert93::geo($x, $y);
       case 'geo-L93':
         return Lambert93::proj($x, $y);
-      case 'WM-geo':
+      case 'WebMercator-geo':
         return WebMercator::geo($x, $y);
-      case 'geo-WM':
+      case 'geo-WebMercator':
         return WebMercator::proj($x, $y);
+      case 'WorldMercator-geo':
+        return WorldMercator::geo($x, $y);
+      case 'geo-WorldMercator':
+        return WorldMercator::proj($x, $y);
       case 'UTM-geo':
         return $utm->geo($x, $y);
       case 'geo-UTM':
@@ -206,6 +214,48 @@ title: static function geo($X, $Y)  - prend des coordonnées Web Mercator et ret
     $phi = pi()/2 - 2*atan(exp(-$Y/self::a)); // (7-4)
     $lambda = $X / self::a; // (7-5)
     return [ $lambda / pi() * 180.0 , $phi / pi() * 180.0 ];
+  }
+};
+
+/*PhpDoc: classes
+name:  Class WorldMercator extends CoordSys
+title: Class WorldMercator extends CoordSys - classe statique contenant les fonctions de proj et inverse du World Mercator
+methods:
+*/
+class WorldMercator extends CoordSys {
+  const epsilon = 1E-11; // tolerance de convergence du calcul de la latitude
+/*PhpDoc: methods
+name:  proj
+title: static function proj($longitude, $latitude)  - prend des degrés et retourne [X, Y] en World Mercator
+*/
+  static function proj($longitude, $latitude) {
+    $lambda = $longitude * pi() / 180.0; // longitude en radians
+    $phi = $latitude * pi() / 180.0;  // latitude en radians
+    $e = self::e(); // 0.0818191910428158; //première exentricité de l'ellipsoïde
+    $x = self::a * $lambda; // (7-6)
+    $y = self::a * log(tan(pi()/4 + $phi/2) * pow((1-$e*sin($phi))/(1+$e*sin($phi)),$e/2)); // (7-7)
+    return [$x,$y];
+  }
+    
+/*PhpDoc: methods
+name:  geo
+title: static function geo($X, $Y)  - prend des coordonnées Web Mercator et retourne [longitude, latitude] en degrés
+*/
+  static function geo($X, $Y) {
+    $t = exp(-$Y/self::a); // (7-10)
+    $phi = pi()/2 - 2 * atan($t); // (7-11)
+    $lambda = $X / self::a; // (7-12)
+    $e = self::e();
+
+    $nbiter = 0;
+    while (1) {
+      $phi0 = $phi;
+      $phi = pi()/2 - 2*atan($t * pow((1-$e*sin($phi))/(1+$e*sin($phi)),$e/2)); // (7-9)
+      if (abs($phi-$phi0) < self::epsilon)
+        return [ $lambda / pi() * 180.0 , $phi / pi() * 180.0 ];
+      if ($nbiter++ > 20)
+        throw new Exception("Convergence inachevee dans WorldMercator::geo() pour nbiter=$nbiter");
+    }
   }
 };
 
