@@ -101,6 +101,31 @@ EOT;
       $area += $polygon->area();
     return $area;
   }
+  
+  /*PhpDoc: methods
+  name:  inters
+  title: "function inters(Geometry $geom): bool - teste l'intersection entre les 2 polygones ou multi-polygones"
+  */
+  function inters(Geometry $geom): bool {
+    if (get_class($geom) == 'Polygon') {
+      foreach($this->geom as $polygon) {
+        if ($polygon->inters($geom)) // intersection entre 2 polygones
+          return true;
+      }
+      return false;
+    }
+    elseif (get_class($geom) == 'MultiPolygon') {
+      foreach($this->geom as $pol0) {
+        foreach ($geom as $pol1) {
+          if ($pol0->inters($pol1)) // intersection entre 2 polygones
+            return true;
+        }
+      }
+      return false;
+    }
+    else
+      throw new Exception("Erreur d'appel de MultiPolygon::inters() avec un objet de ".get_class($geom));
+  }
 };
 
 

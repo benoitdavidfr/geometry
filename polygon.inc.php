@@ -242,6 +242,57 @@ class Polygon extends Geometry {
       echo "${pol}->pointInPolygon(($p0))=",($pol->pointInPolygon($p0)?'true':'false'),"\n";
     }
   }
+
+  /*PhpDoc: methods
+  name:  segs
+  title: "segs(): array - liste des segments"
+  */
+  function segs(): array {
+    $segs = [];
+    foreach ($this->lineStrings() as $ls)
+      $segs = array_merge($segs, $ls->segs());
+    return $segs;
+  }
+  
+  /*PhpDoc: methods
+  name:  inters
+  title: "function inters(Geometry $geom): bool - teste l'intersection entre les 2 polygones ou multi-polygones"
+  */
+  function inters(Geometry $geom): bool {
+    if (get_class($geom) == 'Polygon') {
+      // Si les boites ne s'intersectent pas alors les polygones non plus
+      if ($this->bbox()->inters($geom->bbox()) == 0)
+        return false;
+      // si un point de $geom est dans $this alors il y a intersection
+      foreach($geom->lineStrings() as $ls) {
+        foreach ($ls->points() as $pt) {
+          if ($this->pointInPolygon($pt))
+            return true;
+        }
+      }
+      // Si un point de $this est dans $geom alors il y a intersection
+      foreach ($this->lineStrings() as $ls) {
+        foreach ($ls->points() as $pt) {
+          if ($geom->pointInPolygon($pt))
+            return true;
+        }
+      }
+      // Si 2 segments s'intersectent alors il y a intersection
+      foreach ($this->segs() as $seg0) {
+        foreach($geom->segs() as $seg1) {
+          if ($seg0->inters($seg1))
+            return true;
+        }
+      }
+      // Sinon il n'y a pas intersection
+      return false;
+    }
+    elseif (get_class($geom) == 'MultiPolygon') {
+      return $geom->inters($this);
+    }
+    else
+      throw new Exception("Erreur d'appel de Polygon::inters() avec un objet de ".get_class($geom));
+  }
 };
 
 

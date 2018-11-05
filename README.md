@@ -79,11 +79,17 @@ pour certaines méthodes l'objet est considéré comme un vecteur.
   -  `projPointOnLine(Point $a, Point $b): float` - projection du point sur la droite A,B,  
     renvoie u / P' = A + u * (B-A). u == 0 <=> P'== A, u == 1 <=> P' == B
     Le point projeté est sur le segment ssi u est dans [0 .. 1].
-  - `static interSegSeg(array $a, array $b): ?array` - intersection entre 2 segments a et b  
-    Chaque segment en paramètre est défini comme un tableau de 2 points  
-    Si les segments ne s'intersectent pas alors retourne null  
+  
+### La classe Segment
+La classe Segment implémente un segment de droite constitué de 2 points.
+
+#### Méthodes
+
+  - `__construct(Point $pt0, Point $pt1)` - construction à partir de 2 points
+  - `inters(Segment $seg): array` - intersection entre 2 segments  
+    Si les segments ne s'intersectent pas alors retourne []  
     S'il s'intersectent, retourne le pt ainsi que les abscisses u et v  
-    Si les 2 segments sont parallèles, alors retourne null même s'ils sont partiellement confondus
+    Si les 2 segments sont parallèles, alors retourne [] même s'ils sont partiellement confondus
     
 ### La classe BBox
 La classe BBox gère les boites englobantes définies par 2 points min et max.  
@@ -165,7 +171,8 @@ et d'éventuels trous chacun défini comme une ligne brisée fermée.
     Par défaut, l'extérieur et les intérieurs tournent dans des sens différents.
     La surface est positive si l'extérieur tourne dans le sens trigonométrique, < 0 sinon.
     Si l'option 'noDirection' vaut true alors les sens ne sont pas pris en compte.
-  - `pointInPolygon(Point $pt)` - teste si un point pt est dans le polygone 
+  - `pointInPolygon(Point $pt): bool` - teste si le point pt est dans le polygone 
+  - `inters(Geometry $geom): bool` - teste l'intersection entre les 2 polygones ou multi-polygones
 
 ### La classe abstraite MultiGeom
 La classe abstraite MultiGeom factorise des méthodes communes sur les listes de géométries élémentaires homogènes.
@@ -199,6 +206,7 @@ La classe MultiPolygon implémente la primitive MultiPolygon correspondant à un
 ### Méthodes
   - `__construct($param)` - initialise un MultiPolygon à partir d'un WKT ou de [Polygon] ou de [[[[num,num]]]]
   - `wkt(): string` - génère la chaine de caractère correspondant au WKT avec l'entete
+  - `inters(Geometry $geom): bool` - teste l'intersection entre les 2 polygones ou multi-polygones
 
 ### La classe GeometryCollection
 La classe GeometryCollection implémente la primitive GeometryCollection correspondant à une liste

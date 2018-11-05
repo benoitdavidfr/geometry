@@ -6,6 +6,8 @@ includes: [ geometry.inc.php ]
 functions:
 classes:
 journal: |
+  4/11/2018:
+  - création d'une classe segment
   21/10/2017:
   - première version
 */
@@ -215,7 +217,7 @@ class Point extends Geometry {
   name:  scalMult
   title: "static function scalMult($u, Point $v): Point - multiplication $u * $v"
   */
-  static function scalMult($u, Point $v): Point { return new Point([$u*$v->x(), $u*$v->y()]); }
+  static function scalMult(float $u, Point $v): Point { return new Point([$u*$v->x(), $u*$v->y()]); }
 
   /*PhpDoc: methods
   name:  pvect
@@ -310,33 +312,48 @@ class Point extends Geometry {
       echo '(',$p,")->projPointOnLine(",$a,',',$b,")->",$p->projPointOnLine($a,$b),"\n";
     }
   }
+
+  /*PhpDoc: methods
+  name:  inters
+  title: "abstract function inters(Geometry $geom): bool - teste l'intersection entre les 2 géommétries"
+  */
+  //abstract function inters(Geometry $geom): bool;
+};
+
+class Segment {
+  private $pts; // 2 points
+  
+  function __construct(Point $pt0, Point $pt1) { $this->pts = [$pt0, $pt1]; }
   
   /*PhpDoc: methods
-  name:  interSegSeg
-  title: "static function interSegSeg(array $a, array $b): ?array - intersection entre 2 segments a et b"
+  name:  intersSeg
+  title: "function intersSeg(Segment $seg): ?array - intersection entre 2 segments"
   doc: |
-    Chaque segment en paramètre est défini comme un tableau de 2 points
-    Si les segments ne s'intersectent pas alors retourne null
-    S'il s'intersectent, retourne le pt ainsi que les abscisses u et v
-    Si les 2 segments sont parallèles, alors retourne null même s'ils sont partiellement confondus
+    Si les segments ne s'intersectent pas alors retourne []
+    S'ils s'intersectent alors retourne le pt ainsi que les abscisses u et v
+    Si les 2 segments sont parallèles, alors retourne [] même s'ils sont partiellement confondus
   journal: |
+    4/11/2018
+      Création d'une classe Segement
     9/1/2017
       Utilisation de tableaux de points comme paramètre
     29/12/2016
       Modif pour optimisation
   */
-  static function interSegSeg(array $a, array $b): ?array {
-    if (max($a[0]->x(),$a[1]->x()) < min($b[0]->x(),$b[1]->x())) return null;
-    if (max($b[0]->x(),$b[1]->x()) < min($a[0]->x(),$a[1]->x())) return null;
-    if (max($a[0]->y(),$a[1]->y()) < min($b[0]->y(),$b[1]->y())) return null;
-    if (max($b[0]->y(),$b[1]->y()) < min($a[0]->y(),$a[1]->y())) return null;
+  function inters(Segment $seg): array {
+    $a = $this->pts;
+    $b = $seg->pts;
+    if (max($a[0]->x(),$a[1]->x()) < min($b[0]->x(),$b[1]->x())) return [];
+    if (max($b[0]->x(),$b[1]->x()) < min($a[0]->x(),$a[1]->x())) return [];
+    if (max($a[0]->y(),$a[1]->y()) < min($b[0]->y(),$b[1]->y())) return [];
+    if (max($b[0]->y(),$b[1]->y()) < min($a[0]->y(),$a[1]->y())) return [];
     
     $va = Point::substract($a[0], $a[1]); // vecteur correspondant au segment a
     $vb = Point::substract($b[0], $b[1]); // vecteur correspondant au segment b
     $ab = Point::substract($a[0], $b[0]); // vecteur b0 - a0
     $pab = Point::pvect($va, $vb);
     if ($pab == 0)
-      return null; // droites parallèles, éventuellement confondues
+      return []; // droites parallèles, éventuellement confondues
     $u = Point::pvect($ab, $vb) / $pab;
     $v = Point::pvect($ab, $va) / $pab;
     if (($u >= 0) and ($u < 1) and ($v >= 0) and ($v < 1))
@@ -344,9 +361,9 @@ class Point extends Geometry {
                'u'=>$u, 'v'=>$v
              ];
     else
-      return null;
+      return [];
   }
-  static function test_interSegSeg() {
+  static function test_inters() {
     foreach ([
       ['POINT(0 0)','POINT(10 0)','POINT(0 -5)','POINT(10 5)'],
       ['POINT(0 0)','POINT(10 0)','POINT(0 0)','POINT(10 5)'],
@@ -357,9 +374,13 @@ class Point extends Geometry {
       $a1 = new Point($lpts[1]);
       $b0 = new Point($lpts[2]);
       $b1 = new Point($lpts[3]);
-      echo "interSegSeg(",$a0,',',$a1,',',$b0,',',$b1,")->"; print_r(Point::interSegSeg([$a0,$a1],[$b0,$b1])); echo "\n";
+      echo "inters(",$a0,',',$a1,',',$b0,',',$b1,")->";
+      $a = new Segment($a0, $a1);
+      $b = new Segment($b0, $b1);
+      print_r($a->inters($b)); echo "\n";
     }
   }
+
 };
 
 if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
@@ -371,18 +392,22 @@ if (!isset($_GET['test'])) {
 </pre>
 <h2>Test de la classe Point</h2>
 <ul>
-  <li><a href='?test=test_fromWkt'>initialisation par WKT</a>
-  <li><a href='?test=test_fromGeoJSON'>initialisation par GeoJSON</a>
-  <li><a href='?test=test_interSegSeg'>test_interSegSeg</a>
-  <li><a href='?test=test_projPointOnLine'>test_projPointOnLine</a>
-  <li><a href='?test=test_distancePointLine'>test_distancePointLine</a>
-  <li><a href='?test=test_vectLength'>test_vectLength</a>
-  <li><a href='?test=test_pscal'>test_pscal</a>
+  <li><a href='?class=Point&amp;test=test_fromWkt'>initialisation par WKT</a>
+  <li><a href='?class=Point&amp;test=test_fromGeoJSON'>initialisation par GeoJSON</a>
+  <li><a href='?class=Point&amp;test=test_projPointOnLine'>test_projPointOnLine</a>
+  <li><a href='?class=Point&amp;test=test_distancePointLine'>test_distancePointLine</a>
+  <li><a href='?class=Point&amp;test=test_vectLength'>test_vectLength</a>
+  <li><a href='?class=Point&amp;test=test_pscal'>test_pscal</a>
+</ul>\n
+<h2>Test de la classe Segment</h2>
+<ul>
+  <li><a href='?class=Segment&amp;test=test_inters'>test_inters</a>
 </ul>\n
 EOT;
   die();
 }
 else {
+  $class = $_GET['class'];
   $test = $_GET['test'];
-  Point::$test();
+  $class::$test();
 }
