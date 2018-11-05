@@ -119,6 +119,21 @@ class LineString extends Geometry {
   }
   
   /*PhpDoc: methods
+  name:  segs
+  title: "function segs(): array - retourne la liste des segments composant la ligne"
+  */
+  function segs(): array {
+    $segs = [];
+    $pt0 = null;
+    foreach ($this->points() as $pt) {
+      if ($pt0)
+        $segs[] = new Segment($pt0, $pt);
+      $pt0 = $pt;
+    }
+    return $segs;
+  }
+  
+  /*PhpDoc: methods
   name:  isValid
   title: "function isValid(): bool - renvoie booléen"
   */
