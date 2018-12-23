@@ -6,6 +6,8 @@ includes: [ geometry.inc.php ]
 functions:
 classes:
 journal: |
+  23/12/2018:
+  - modification de la signature de add, scalMult, pscal et pvect
   4/11/2018:
   - création d'une classe segment
   21/10/2017:
@@ -26,15 +28,15 @@ class Point extends Geometry {
   
   /*PhpDoc: methods
   name:  __construct
-  title: __construct($param) - construction à partir d'un WKT ou d'un [num, num {, num}]
+  title: __construct($param) - construction à partir d'un WKT ou d'un array [num, num {, num}]
   */
   function __construct($param) {
     if (self::$verbose)
       echo "Point::__construct(",(is_string($param) ? $param : ''),")\n";
     if (is_array($param)) {
-      if ((count($param)==2) and is_numeric($param[0]) and is_numeric($param[1]))
+      if ((count($param)==2) && is_numeric($param[0]) && is_numeric($param[1]))
         $this->geom = [ $param[0]+0, $param[1]+0 ];
-      elseif ((count($param)==3) and is_numeric($param[0]) and is_numeric($param[1]) and is_numeric($param[2]))
+      elseif ((count($param)==3) && is_numeric($param[0]) && is_numeric($param[1]) && is_numeric($param[2]))
         $this->geom = [ $param[0]+0, $param[1]+0, $param[2]+0 ];
       else {
         echo "param = "; var_dump($param);
@@ -43,7 +45,7 @@ class Point extends Geometry {
     } 
     elseif (is_string($param)) {
       if (!preg_match('!^(POINT\s*\()?([-\d.e]+)\s+([-\d.e]+)(\s+([-\d.e]+))?\)?$!', $param, $matches))
-        throw new Exception("Parametre string='$param' non reconnu dans Point::__construct()");
+        throw new Exception("Parametre wkt='$param' non reconnu dans Point::__construct()");
       elseif (isset($matches[4]))
         $this->geom = [$matches[2]+0, $matches[3]+0, $matches[5]+0];
       else
@@ -98,8 +100,14 @@ class Point extends Geometry {
   function y() { return $this->geom[1]; }
   
   /*PhpDoc: methods
+  name:  z
+  title: function z() - accès à la troisième coordonnée ou null
+  */
+  function z() { return isset($this->geom[2]) ? $this->geom[2] : null; }
+  
+  /*PhpDoc: methods
   name:  isValid
-  title: "function isValid(): bool - renvoie booléen"
+  title: "function isValid(): bool - renvoie true car tous les objets point construits sont valides"
   */
   function isValid(): bool { return true; }
 
@@ -122,7 +130,7 @@ class Point extends Geometry {
     
   /*PhpDoc: methods
   name:  proj2D
-  title: "function proj2D(): Point - projrction 2D"
+  title: "function proj2D(): Point - projection 2D"
   */
   function proj2D(): Point { return new Point([$this->geom[0], $this->geom[1]]); }
     
@@ -136,7 +144,7 @@ class Point extends Geometry {
 
   /*PhpDoc: methods
   name:  wkt
-  title: "function wkt($nbdigits=null): string - retourne la chaine WKT"
+  title: "function wkt(): string - retourne la chaine WKT"
   */
   function wkt(): string { return strtoupper(get_called_class()).'('.$this.')'; }
   
@@ -144,10 +152,7 @@ class Point extends Geometry {
   name:  bbox
   title: "function bbox(): BBox - calcule la bbox"
   */
-  function bbox(): BBox {
-    $bbox = new BBox;
-    return $bbox->bound($this);
-  }
+  function bbox(): BBox { return new BBox([$this]); }
   
   /*PhpDoc: methods
   name:  drawCircle
@@ -157,7 +162,7 @@ class Point extends Geometry {
   
   /*PhpDoc: methods
   name:  distance
-  title: "function distance(): float - retourne la distance euclidienne entre 2 points"
+  title: "function distance(Point $pt1): float - retourne la distance euclidienne entre 2 points"
   */
   function distance(Point $pt1): float {
     return sqrt(square($pt1->x() - $this->x()) + square($pt1->y() - $this->y()));
@@ -165,12 +170,12 @@ class Point extends Geometry {
   
   /*PhpDoc: methods
   name:  chgCoordSys
-  title: "function chgCoordSys($src, $dest): Point - crée un nouveau Point en changeant le syst. de coord. de $src en $dest"
+  title: "function chgCoordSys(string $src, string $dest): Point - crée un nouveau Point en passant du syst. de coord. $src en $dest"
   uses: [ 'coordsys.inc.php?Class CoordSys' ]
   doc: |
     Utilise CoordSys::chg($src, $dest, $x, $y) pour effectuer le chgt de syst. de coordonnées
   */
-  function chgCoordSys($src, $dest): Point {
+  function chgCoordSys(string $src, string $dest): Point {
     $c = CoordSys::chg($src, $dest, $this->geom[0], $this->geom[1]);
     if (isset($this->geom[2]))
       return new Point([$c[0], $c[1], $this->geom[2]]);
@@ -185,11 +190,11 @@ class Point extends Geometry {
   function coordinates(): array { return $this->geom; }
   
   /*PhpDoc: methods
-  name:  vectLength
-  title: "function vectLength(): float - renvoie la norme du vecteur"
+  name:  length
+  title: "function length(): float - renvoie la norme du vecteur"
   */
-  function vectLength(): float { return sqrt(Point::pscal($this,$this)); }
-  static function test_vectLength() {
+  function length(): float { return sqrt($this->pscal($this)); }
+  static function test_length() {
     foreach ([
       'POINT(15 20)',
       'POINT(1 0)',
@@ -197,7 +202,7 @@ class Point extends Geometry {
       'POINT(10 10)',
     ] as $pt) {
       $v = new Point($pt);
-      echo "vectLength($v)=",$v->vectLength(),"\n";
+      echo "length($v)=",$v->length(),"\n";
     }
   }
 
@@ -208,28 +213,52 @@ class Point extends Geometry {
   static function substract(Point $p0, Point $p): Point { return new Point([$p->x()-$p0->x(), $p->y()-$p0->y()]); }
 
   /*PhpDoc: methods
+  name:  substract
+  title: "function diff(Point $v): Point - différence $this - $v"
+  */
+  function diff(Point $v): Point { return new Point([$this->x() - $v->x(), $this->y() - $v->y()]); }
+
+  /*PhpDoc: methods
   name:  add
   title: "static function add(Point $a, Point $b): Point - somme $a + $b"
   */
-  static function add(Point $a, Point $b): Point { return new Point([$a->x()+$b->x(), $a->y()+$b->y()]); }
+  //static function add(Point $a, Point $b): Point { return new Point([$a->x()+$b->x(), $a->y()+$b->y()]); }
+
+  /*PhpDoc: methods
+  name:  add
+  title: "function add(Point $v): Point - somme $this + $v"
+  */
+  function add(Point $v): Point { return new Point([$this->x() + $v->x(), $this->y() + $v->y()]); }
 
   /*PhpDoc: methods
   name:  scalMult
-  title: "static function scalMult($u, Point $v): Point - multiplication $u * $v"
+  title: "static function scalMult(float $u, Point $v): Point - multiplication $u * $v"
   */
-  static function scalMult(float $u, Point $v): Point { return new Point([$u*$v->x(), $u*$v->y()]); }
+  //static function scalMult(float $u, Point $v): Point { return new Point([$u*$v->x(), $u*$v->y()]); }
+
+  /*PhpDoc: methods
+  name:  scalMult
+  title: "function scalMult(float $u): Point - multiplication $u * $this"
+  */
+  function scalMult(float $u): Point { return new Point([$u * $this->x(), $u * $this->y()]); }
 
   /*PhpDoc: methods
   name:  pvect
   title: "static function pvect(Point $va, Point $vb): float - produit vectoriel"
   */
-  static function pvect(Point $va, Point $vb): float { return $va->x()*$vb->y() - $va->y()*$vb->x(); }
+  //static function pvect(Point $va, Point $vb): float { return $va->x()*$vb->y() - $va->y()*$vb->x(); }
 
   /*PhpDoc: methods
   name:  pvect
-  title: "static function pscal(Point $va, Point $vb): float - produit scalaire"
+  title: "function pvect(Point $v): float - produit vectoriel $this par $v"
   */
-  static function pscal(Point $va, Point $vb): float { return $va->x()*$vb->x() + $va->y()*$vb->y(); }
+  function pvect(Point $v): float { return $this->x()*$v->y() - $this->y()*$v->x(); }
+
+  /*PhpDoc: methods
+  name:  pvect
+  title: "function pscal(Point $v): float - produit scalaire $this par $v"
+  */
+  function pscal(Point $v): float { return $this->x()*$v->x() + $this->y()*$v->y(); }
   static function test_pscal() {
     foreach ([
       ['POINT(15 20)','POINT(20 15)'],
@@ -240,8 +269,8 @@ class Point extends Geometry {
     ] as $lpts) {
       $v0 = new Point($lpts[0]);
       $v1 = new Point($lpts[1]);
-      echo "pvect($v0,$v1)=",Point::pvect($v0,$v1),"\n";
-      echo "pscal($v0,$v1)=",Point::pscal($v0,$v1),"\n";
+      echo "$v0->pvect($v1)=",$v0->pvect($v1),"\n";
+      echo "$v0->pscal($v1)=",$v0->pscal($v1),"\n";
     }
   }
   
@@ -263,9 +292,9 @@ class Point extends Geometry {
     }
   */
   function distancePointLine(Point $a, Point $b): float {
-    $ab = Point::substract($a, $b);
-    $ap = Point::substract($a, $this);
-    return Point::pvect($ab, $ap) / $ab->vectLength();
+    $ab = $b->diff($a);
+    $ap = $this->diff($a);
+    return $ab->pvect($ap) / $ab->length();
   }
   static function test_distancePointLine() {
     foreach ([
@@ -296,9 +325,9 @@ class Point extends Geometry {
     }
   */
   function projPointOnLine(Point $a, Point $b): float {
-    $ab = Point::substract($a, $b);
-    $ap = Point::substract($a, $this);
-    return Point::pscal($ab, $ap) / ($ab->x()*$ab->x() + $ab->y()*$ab->y());
+    $ab = $b->diff($a);
+    $ap = $this->diff($a);
+    return $ab->pscal($ap) / $ab->pscal($ab);
   }
   static function test_projPointOnLine() {
     foreach ([
@@ -348,14 +377,14 @@ class Segment {
     if (max($a[0]->y(),$a[1]->y()) < min($b[0]->y(),$b[1]->y())) return [];
     if (max($b[0]->y(),$b[1]->y()) < min($a[0]->y(),$a[1]->y())) return [];
     
-    $va = Point::substract($a[0], $a[1]); // vecteur correspondant au segment a
-    $vb = Point::substract($b[0], $b[1]); // vecteur correspondant au segment b
-    $ab = Point::substract($a[0], $b[0]); // vecteur b0 - a0
-    $pab = Point::pvect($va, $vb);
+    $va = $a[1]->diff($a[0]); // vecteur correspondant au segment a
+    $vb = $b[1]->diff($b[0]); // vecteur correspondant au segment b
+    $ab = $b[0]->diff($a[0]); // vecteur b0 - a0
+    $pab = $va->pvect($vb);
     if ($pab == 0)
       return []; // droites parallèles, éventuellement confondues
-    $u = Point::pvect($ab, $vb) / $pab;
-    $v = Point::pvect($ab, $va) / $pab;
+    $u = $ab->pvect($vb) / $pab;
+    $v = $ab->pvect($va) / $pab;
     if (($u >= 0) and ($u < 1) and ($v >= 0) and ($v < 1))
       return [ 'pt'=>new Point([$a[0]->x()+$u*$va->x(), $a[0]->y()+$u*$va->y() ]),
                'u'=>$u, 'v'=>$v
@@ -396,7 +425,7 @@ if (!isset($_GET['test'])) {
   <li><a href='?class=Point&amp;test=test_fromGeoJSON'>initialisation par GeoJSON</a>
   <li><a href='?class=Point&amp;test=test_projPointOnLine'>test_projPointOnLine</a>
   <li><a href='?class=Point&amp;test=test_distancePointLine'>test_distancePointLine</a>
-  <li><a href='?class=Point&amp;test=test_vectLength'>test_vectLength</a>
+  <li><a href='?class=Point&amp;test=test_length'>test_length</a>
   <li><a href='?class=Point&amp;test=test_pscal'>test_pscal</a>
 </ul>\n
 <h2>Test de la classe Segment</h2>

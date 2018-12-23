@@ -69,17 +69,6 @@ EOT;
   }
   
   /*PhpDoc: methods
-  name:  chgCoordSys
-  title: "function chgCoordSys($src, $dest): MultiPolygon - créée un nouveau MultiPolygon en changeant le syst. de coord. de $src en $dest"
-  */
-  function chgCoordSys($src, $dest): MultiPolygon {
-    $pols = [];
-    foreach ($this->geom as $pol)
-      $pols[] = $pol->chgCoordSys($src, $dest);
-    return new MultiPolygon($pols);
-  }
-  
-  /*PhpDoc: methods
   name:  wkt
   title: function wkt() - génère une chaine de caractère correspondant au WKT avec l'entete
   */

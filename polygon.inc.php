@@ -172,7 +172,7 @@ class Polygon extends Geometry {
   name:  coordinates
   title: "function coordinates(): array - renvoie les coordonnées comme [ [ [ num ] ] ]"
   */
-  function coordinates():array {
+  function coordinates(): array {
     $coordinates = [];
     foreach ($this->geom as $ls)
       $coordinates[] = $ls->coordinates();
@@ -195,7 +195,7 @@ class Polygon extends Geometry {
     La surface est positive si l'extérieur tourne dans le sens trigonométrique, <0 sinon.
     Si l'option 'noDirection' vaut true alors les sens ne sont pas pris en compte
   */
-  function area(array $options=[]):float {
+  function area(array $options=[]): float {
     $noDirection = (isset($options['noDirection']) and ($options['noDirection']));
     foreach ($this->geom as $ring)
       if (!isset($area))
@@ -223,7 +223,7 @@ class Polygon extends Geometry {
   name:  pointInPolygon
   title: "pointInPolygon(Point $pt): bool - teste si un point pt est dans le polygone"
   */
-  function pointInPolygon(Point $pt):bool {
+  function pointInPolygon(Point $pt): bool {
     $c = false;
     foreach ($this->geom as $ring)
       if ($ring->pointInPolygon($pt))

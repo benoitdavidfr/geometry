@@ -32,7 +32,7 @@ doc: |
   La méthode principale est bound(Point) qui ajoute un point à la boite.
   On a de plus 2 méthodes intéressantes:
   - le calcul de la taille de la boite
-  - le calcul de la distance minimum entre les points des 2 boites.
+  - le calcul de la distance minimum entre les points de 2 boites.
   Une boite peut ne contenir aucun point ; dans ce cas min et max contiennent la valeur null. On dit qu'elle est indéterminée.
   Si une boite n'est pas indéterminée alors min et max contiennent chacun un point.
 */
@@ -45,21 +45,32 @@ class BBox {
   title: function __construct($param=null) - initialise une boite en fonction du paramètre
   doc: |
     Sans paramètre la boite est initialisée indéterminée.
-    Si le paramètre optionnel est une chaine de la forme "nombre,nombre" alors min et max valent le point indiqué
+    Si le paramètre est une chaine de la forme "nombre,nombre" alors min et max valent le point indiqué.
     Si la chaine est de la forme "nombre,nombre,nombre,nombre" alors min correspond aux 2 premières valeurs et
-    max aux deux suivantes
+    max aux deux suivantes.
+    Si le paramètre est un tableau de points alors le bound des points est calculé
   */
-  function __construct(string $param=null) {
-    if ($param===null)
+  function __construct($param=null) {
+    if ($param === null)
       return;
-    $coord = explode(',', $param);
-    //var_dump($coord);
-    if ((count($coord) == 2) && is_numeric($coord[0]) && is_numeric($coord[1]))
-      $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
-    elseif ((count($coord) == 4) && is_numeric($coord[0]) && is_numeric($coord[1])
-             && is_numeric($coord[2]) && is_numeric($coord[3])) {
-      $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
-      $this->bound(new Point([$coord[2]+0, $coord[3]+0]));
+    if (is_string($param)) {
+      $coord = explode(',', $param);
+      //var_dump($coord);
+      if ((count($coord) == 2) && is_numeric($coord[0]) && is_numeric($coord[1]))
+        $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
+      elseif ((count($coord) == 4) && is_numeric($coord[0]) && is_numeric($coord[1])
+               && is_numeric($coord[2]) && is_numeric($coord[3])) {
+        $this->bound(new Point([$coord[0]+0, $coord[1]+0]));
+        $this->bound(new Point([$coord[2]+0, $coord[3]+0]));
+      }
+      else
+        throw new Exception("Parametre non reconnu dans BBox::__construct()");
+      return;
+    }
+    elseif (is_array($param)) {
+      foreach ($param as $pt)
+        $this->bound($pt);
+      return;
     }
     else
       throw new Exception("Parametre non reconnu dans BBox::__construct()");

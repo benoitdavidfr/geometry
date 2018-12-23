@@ -25,7 +25,7 @@ class MultiLineString extends MultiGeom {
     if (is_array($param)) {
       $this->geom = [];
       foreach ($param as $ls) {
-        if (is_object($ls) and (get_class($ls)=='LineString'))
+        if (is_object($ls) && (get_class($ls)=='LineString'))
           $this->geom[] = $ls;
         elseif (is_array($ls))
           $this->geom[] = new LineString($ls);

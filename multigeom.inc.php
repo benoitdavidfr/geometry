@@ -85,6 +85,18 @@ abstract class MultiGeom extends Geometry {
     $class = get_called_class();
     return new $class ($coll);
   }
+  
+  /*PhpDoc: methods
+  name:  chgCoordSys
+  title: "function chgCoordSys(string $src, string $dest): MultiGeom - créée un nouveau MultiGeom en changeant le syst. de coord. de $src en $dest"
+  */
+  function chgCoordSys(string $src, string $dest): MultiGeom {
+    $coll = [];
+    foreach ($this->geom as $elt)
+      $coll[] = $elt->chgCoordSys($src, $dest);
+    $class = get_called_class();
+    return new $class ($coll);
+  }
 };
 
 

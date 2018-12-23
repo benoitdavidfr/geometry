@@ -55,28 +55,30 @@ pour certaines méthodes l'objet est considéré comme un vecteur.
   - `__construct($param)` - construction à partir d'un WKT ou d'un array [number, number {, number}]
   - `x(): number` - accès à la première coordonnée
   - `y(): number` - accès à la seconde coordonnée
+  - `z(): number` - accès à la troisième coordonnée ou null
   - `isValid(): bool` - renvoie vrai ssi l'objet est valide
   - `round(int $nbdigits): Point` - arrondit un point avec le nb de chiffres indiqués
   - `filter(int $nbdigits): Point` - synonyme de round()
   - `proj2D(): Point` - projection 2D, supprime l'éventuelle 3ème coordonnée
   -  `__toString(): string` - affichage des coordonnées séparées par un blanc
   - `wkt($nbdigits=null): string` - retourne la chaine WKT
-  -  `bbox(): BBox` - renvoie la bbox
+  - `bbox(): BBox` - renvoie la bbox
   - `drawCircle(Drawing $drawing, $r, $fill): void` - dessine un cercle centré sur le point de rayon r
     dans la couleur indiquée
   - `distance(): float` - retourne la norme du vecteur, cad la distance euclidienne entre 2 points
-  - `chgCoordSys($src, $dest): Point` - crée un nouveau Point en changeant le syst. de coord. de $src en $dest
+  - `chgCoordSys(string $src, string $dest): Point` - crée un nouveau Point en changeant le syst. de coord. de $src en $dest
   - `coordinates(): array` - renvoie les coordonnées sous la forme [ number, number {, number} ]
-  - `vectLength(): float` - renvoie la norme du vecteur
+  - `length(): float` - renvoie la norme du vecteur
   - `static substract(Point $p0, Point $p): Point` - différence $p - $p0, fournit un vecteur
-  - `static add(Point $a, Point $b): Point` - somme $a + $b
-  - `static scalMult($u, Point $v): Point` - multiplication du vecteur $v par le scalaire $u
-  - `static pvect(Point $va, Point $vb): float` - produit vectoriel
-  - `static pscal(Point $va, Point $vb): float` - produit scalaire
+  - `diff(Point $v): Point` - différence $this - $v, fournit un vecteur
+  - `add(Point $v): Point` - somme $this + $v
+  - `scalMult(float $u): Point` - multiplication de $this par le scalaire $u
+  - `pvect(Point $v): float` - produit vectoriel $this * $v
+  - `pscal(Point $v): float` - produit scalaire $this * $v
   - `distancePointLine(Point $a, Point $b): float` - distance signée du point courant à la droite définie
     par les 2 points  
     La distance est positive si le point est à gauche de la droite AB et négative s'il est à droite
-  -  `projPointOnLine(Point $a, Point $b): float` - projection du point sur la droite A,B,  
+  - `projPointOnLine(Point $a, Point $b): float` - projection du point sur la droite A,B,  
     renvoie u / P' = A + u * (B-A). u == 0 <=> P'== A, u == 1 <=> P' == B
     Le point projeté est sur le segment ssi u est dans [0 .. 1].
   

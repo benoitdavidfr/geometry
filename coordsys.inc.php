@@ -104,12 +104,13 @@ doc: |
   
 /*PhpDoc: methods
 name:  chg
-title: static function chg($src, $dest, $x, $y) - chg de syst. de coord. de $src vers $dest
+title: "static function chg(string $src, string $dest, float $x, float $y): array - chg de syst. de coord. de $src vers $dest"
 doc: |
-  Les couples acceptés sont 'geo',proj et proj,'geo'
-  où proj vaut: WM, L93 ou UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'
+  Les couples acceptés sont 'geo',{proj} et {proj},'geo'
+  où proj vaut: WebMercator, WorldMercator, L93 ou UTM-ddX où dd est le numéro de zone et X est soit 'N', soit 'S'
+  Les coord. géo. sont en longitude, latitude en degrés décimaux.
 */
-  static function chg($src, $dest, $x, $y) {
+  static function chg(string $src, string $dest, float $x, float $y): array {
     foreach (['src','dest'] as $var)
       if (substr($$var,0,3)=='UTM') {
         $zone = substr($$var,4,3);
@@ -151,9 +152,9 @@ class Lambert93 extends CoordSys {
   const ys = 12655612.049876; //coordonnées en projection du pole
 /*PhpDoc: methods
 name:  proj
-title: static function proj($longitude, $latitude)  - prend des degrés et retourne [X, Y]
+title: static function proj($longitude, $latitude)  - prend des degrés décimaux et retourne [X, Y]
 */
-  static function proj($longitude, $latitude) {
+  static function proj(float $longitude, float $latitude): array {
 // définition des constantes
     $e = self::e(); // 0.0818191910428158; //première exentricité de l'ellipsoïde
 
@@ -169,7 +170,7 @@ title: static function proj($longitude, $latitude)  - prend des degrés et retou
   
 /*PhpDoc: methods
 name:  geo
-title: static function geo($X, $Y)  - retourne [longitude, latitude] en degrés
+title: static function geo($X, $Y)  - retourne [longitude, latitude] en degrés décimaux
 */
   static function geo($X, $Y) {
     $e = self::e(); // 0.0818191910428158; //première exentricité de l'ellipsoïde
@@ -359,19 +360,19 @@ title: function geo($X, $Y)  - prend des coordonnées UTM zone et retourne [long
 };
 
 
-if (basename(__FILE__)<>basename($_SERVER['PHP_SELF'])) return;
+if (basename(__FILE__) <> basename($_SERVER['PHP_SELF'])) return;
 
 
 /*PhpDoc: functions
-name: degres_sexa
-title: function degres_sexa($r, $ptcardinal='', $dr=0)
+name: radians2degresSexa
+title: function radians2degresSexa($r, $ptcardinal='', $dr=0)
 doc: |
   Transformation d'une valeur en radians en une chaine en degres sexagesimaux
   si ptcardinal est fourni alors le retour respecte la notation avec point cardinal
   sinon c'est la notation signee qui est utilisee
   dr est la precision de r
 */
-function degres_sexa($r, $ptcardinal='', $dr=0) {
+function radians2degresSexa($r, $ptcardinal='', $dr=0) {
   $signe = '';
   if ($r < 0) {
     if ($ptcardinal) {
@@ -419,13 +420,13 @@ if (0) {
   echo "Example du rapport USGS pp 269-270 utilisant l'Ellipsoide de Clarke\n";
   $utm18N = new UTM('18N');
   $pt = [-73.5, 40.5];
-  echo "phi=",degres_sexa($pt[1]/180*PI(),'N'),", lambda=", degres_sexa($pt[0]/180*PI(),'E'),"\n";
+  echo "phi=",radians2degresSexa($pt[1]/180*PI(),'N'),", lambda=", radians2degresSexa($pt[0]/180*PI(),'E'),"\n";
   $utm = $utm18N->proj($pt[0],$pt[1]);
   echo "UTM: X=$utm[0] / 127106.5, Y=$utm[1] / 4,484,124.4\n";
   
   $verif = $utm18N->geo($utm[0], $utm[1]);
-  echo "phi=",degres_sexa($verif[1]/180*PI(),'N')," / ",degres_sexa($pt[1]/180*PI(),'N'),
-       ", lambda=", degres_sexa($verif[0]/180*PI(),'E')," / ", degres_sexa($pt[0]/180*PI(),'E'),"\n";
+  echo "phi=",radians2degresSexa($verif[1]/180*PI(),'N')," / ",radians2degresSexa($pt[1]/180*PI(),'N'),
+       ", lambda=", radians2degresSexa($verif[0]/180*PI(),'E')," / ", radians2degresSexa($pt[0]/180*PI(),'E'),"\n";
   die("FIN ligne ".__LINE__);
 }
 
@@ -435,7 +436,7 @@ $refs = [
     'L93'=> [658557.548, 6860084.001],
     'LatLong'=> [48.839473, 2.435368],
     'dms'=> ["48°50'22.1016''", "2°26'07.3236''"],
-    'WM'=> [271103.889193, 6247667.030696],
+    'WebMercator'=> [271103.889193, 6247667.030696],
     'UTM-31N'=> [458568.90, 5409764.67],
   ],
   'FORT-DE-FRANCE V (c)' =>[
@@ -457,13 +458,15 @@ foreach ($refs as $name => $ref) {
     echo "geo ($clamb[0], $clamb[1], L93) ->";
     $cgeo = Lambert93::geo ($clamb[0], $clamb[1]);
     printf ("phi=%s / %s lambda=%s / %s\n",
-      degres_sexa($cgeo[1]/180*PI(),'N'), $ref['dms'][0],
-      degres_sexa($cgeo[0]/180*PI(),'E'), $ref['dms'][1]);
+      radians2degresSexa($cgeo[1]/180*PI(),'N'), $ref['dms'][0],
+      radians2degresSexa($cgeo[0]/180*PI(),'E'), $ref['dms'][1]);
     $cproj = Lambert93::proj($cgeo[0], $cgeo[1]);
-    printf ("Verification du calcul inverse: %.2f / %.2f , %.2f / %.2f\n\n", $cproj[0], $clamb[0], $cproj[1], $clamb[1]);
+    printf ("Verification du calcul inverse: %.2f / %.2f , %.2f / %.2f\n\n",
+              $cproj[0], $clamb[0], $cproj[1], $clamb[1]);
 
     $cwm = WebMercator::proj($cgeo[0], $cgeo[1]);
-    printf ("Coordonnées en WM: %.2f / %.2f, %.2f / %.2f\n", $cwm[0], $ref['WM'][0], $cwm[1], $ref['WM'][1]);
+    printf ("Coordonnées en WebMercator: %.2f / %.2f, %.2f / %.2f\n",
+              $cwm[0], $ref['WebMercator'][0], $cwm[1], $ref['WebMercator'][1]);
   
 // UTM
     $zone = sprintf('%2d',floor($cgeo[0]/6)+31).($cgeo[1]>0?'N':'S');
@@ -474,14 +477,14 @@ foreach ($refs as $name => $ref) {
     $verif = $utm->geo($cutm[0], $cutm[1]);
     echo "Verification du calcul inverse:\n";
     printf ("phi=%s / 48°50'22.1016'' lambda=%s / 2°26'07.3236''\n",
-      degres_sexa($verif[1]/180*PI(),'N'), degres_sexa($verif[0]/180*PI(),'E'));
+      radians2degresSexa($verif[1]/180*PI(),'N'), radians2degresSexa($verif[0]/180*PI(),'E'));
   }
   elseif (isset($ref['UTM'])) {
     $utm = new UTM($ref['UTM'][0]);
     $cgeo = $utm->geo($ref['UTM'][1], $ref['UTM'][2]);
     printf ("phi=%s / %s lambda=%s / %s\n",
-      degres_sexa($cgeo[1]/180*PI(),'N'), $ref['dms'][0],
-      degres_sexa($cgeo[0]/180*PI(),'E'), $ref['dms'][1]);
+      radians2degresSexa($cgeo[1]/180*PI(),'N'), $ref['dms'][0],
+      radians2degresSexa($cgeo[0]/180*PI(),'E'), $ref['dms'][1]);
     $cutm = $utm->proj($cgeo[0], $cgeo[1]);
     printf ("Coordonnées en UTM-%s: %.2f / %.2f, %.2f / %.2f\n", $ref['UTM'][0], $cutm[0], $ref['UTM'][1], $cutm[1], $ref['UTM'][2]);
   }

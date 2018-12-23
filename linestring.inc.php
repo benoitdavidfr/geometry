@@ -33,7 +33,7 @@ class LineString extends Geometry {
     if (is_array($param)) {
       $this->geom = [];
       foreach ($param as $no => $point) {
-        if (is_object($point) and (get_class($point)=='Point')) {
+        if (is_object($point) && (get_class($point)=='Point')) {
           //echo "Ajout de l'objet point $point";
           $this->geom[] = $point;
         }
@@ -95,7 +95,7 @@ class LineString extends Geometry {
   name:  __toString
   title: "function __toString(): string - affiche la liste des points entourées par des ()"
   */
-  function __toString():string { return '('.implode(',',$this->geom).')'; }
+  function __toString(): string { return '('.implode(',',$this->geom).')'; }
   
   /*PhpDoc: methods
   name:  points
@@ -125,7 +125,7 @@ class LineString extends Geometry {
   function segs(): array {
     $segs = [];
     $pt0 = null;
-    foreach ($this->points() as $pt) {
+    foreach ($this->geom as $pt) {
       if ($pt0)
         $segs[] = new Segment($pt0, $pt);
       $pt0 = $pt;
@@ -137,9 +137,7 @@ class LineString extends Geometry {
   name:  isValid
   title: "function isValid(): bool - renvoie booléen"
   */
-  function isValid(): bool {
-    return count($this->geom) > 1;
-  }
+  function isValid(): bool { return count($this->geom) > 1; }
   
   /*PhpDoc: methods
   name:  proj2D
@@ -169,7 +167,7 @@ class LineString extends Geometry {
       // echo "pt=$pt<br>\n";
       $rounded = $pt->round($nbdigits);
       // echo "rounded=$rounded<br>\n";
-      if (!$ptprec or ($rounded<>$ptprec)) {
+      if (!$ptprec || ($rounded<>$ptprec)) {
         $filtered[] = $rounded;
         // echo "ajout de $rounded<br>\n";
       }
@@ -182,7 +180,7 @@ class LineString extends Geometry {
   name:  chgCoordSys
   title: "function chgCoordSys($src, $dest): LineString - créée un nouveau LineString en changeant le syst. de coord. de $src en $dest"
   */
-  function chgCoordSys($src, $dest): LineString {
+  function chgCoordSys(string $src, string $dest): LineString {
     $ls = [];
     foreach ($this->geom as $pt)
       $ls[] = $pt->chgCoordSys($src, $dest);
@@ -230,12 +228,11 @@ class LineString extends Geometry {
   */
   function length(): float {
     $length = 0;
-    foreach ($this->geom as $p) {
-      if (isset($prec)) {
-        $v = Point::substract($p, $prec);
-        $length += $v->vectLength();
-      }
-      $prec = $p;
+    $prec = null;
+    foreach ($this->geom as $pt) {
+      if ($prec)
+        $length += $pt->diff($prec)->length();
+      $prec = $pt;
     }
     return $length;
   }
@@ -258,7 +255,7 @@ class LineString extends Geometry {
     $n = count($this->geom);
     $pt0 = $this->geom[0];
     for ($i=1; $i<$n-1; $i++) {
-      $area += Point::pvect(Point::substract($pt0,$this->geom[$i]), Point::substract($pt0,$this->geom[$i+1]));
+      $area += $this->geom[$i]->diff($pt0)->pvect($this->geom[$i+1]->diff($pt0));
     }
     return $area/2;
   }
@@ -266,6 +263,7 @@ class LineString extends Geometry {
     foreach ([
       'LINESTRING(0 0,1 0,0 1,0 0)',
       'LINESTRING(0 0,1 0,1 1,0 1,0 0)',
+      'LINESTRING(10 10,11 10,11 11,10 11,10 10)',
     ] as $lsstr) {
       $ls = new LineString($lsstr);
       echo "area($ls)=",$ls->area(),"\n";
@@ -280,9 +278,8 @@ class LineString extends Geometry {
   */
   function distancePointPointList(Point $pt): array {
     for ($i=0; $i<count($this->geom); $i++) {
-      $v = Point::substract($pt, $this->geom[$i]);
-      $d = $v->vectLength();
-      if (!isset($dist) or ($d < $dist)) {
+      $d = $this->geom[$i]->diff($pt)->length();
+      if (!isset($dist) || ($d < $dist)) {
         $dist = $d;
         $n = $i;
       }
@@ -301,30 +298,30 @@ class LineString extends Geometry {
   }
   
   /*PhpDoc: methods
-  name:  area
+  name:  distancePointLineString
   title: "function distancePointLineString(Point $pt): array - distance minimum de la ligne brisée au point pt"
   doc : |
     Retourne la distance et le point qui correspond à la distance minimum sous la forme ['dmin'=>$dmin, 'pt'=>$pt]
   */
   function distancePointLineString(Point $pt): array {
     $p0 = $this->geom[0];
-    $p0pt = Point::substract($p0,$pt);
-    $dmin = $p0pt->vectLength();
+    $p0pt = $pt->diff($p0);
+    $dmin = $p0pt->length();
     $resPt = $p0;
     for($i=1; $i<count($this->geom); $i++) {
       $a = $this->geom[$i-1];
       $b = $this->geom[$i];
       $u = $pt->projPointOnLine($a, $b);
 // Si le point projeté est sur le segment, on considère la distance
-      if (($u > 0) and ($u < 1)) {
+      if (($u > 0) && ($u < 1)) {
         $distPointToLine = $pt->distancePointLine($a, $b);
         if ($distPointToLine < $dmin) {
           $dmin = $distPointToLine;
-          $resPt = Point::add($a, Point::scalMult($u, Point::substract($a,$b)));
+          $resPt = $a->add($a->diff($b)->scalMult($u));
         }
       }
-      $bp = Point::substract($b, $pt);
-      $dist = $bp->vectLength();
+      $bp = $pt->diff($b);
+      $dist = $bp->length();
       if ($dist < $dmin) {
         $dmin = $dist;
         $resPt = $b;
