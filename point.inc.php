@@ -269,8 +269,8 @@ class Point extends Geometry {
     ] as $lpts) {
       $v0 = new Point($lpts[0]);
       $v1 = new Point($lpts[1]);
-      echo "$v0->pvect($v1)=",$v0->pvect($v1),"\n";
-      echo "$v0->pscal($v1)=",$v0->pscal($v1),"\n";
+      echo "($v0)->pvect($v1)=",$v0->pvect($v1),"\n";
+      echo "($v0)->pscal($v1)=",$v0->pscal($v1),"\n";
     }
   }
   

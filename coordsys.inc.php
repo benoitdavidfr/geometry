@@ -15,7 +15,7 @@ doc: |
 journal: |
   4/11/2018:
     chgt du code WM en WebMercator
-    ajout de WordMercator sous le code WorldMercator
+    ajout de WorldMercator sous le code WorldMercator
   22/11/2017:
     intégration dans geometry
   14-15/12/2016
@@ -365,14 +365,14 @@ if (basename(__FILE__) <> basename($_SERVER['PHP_SELF'])) return;
 
 /*PhpDoc: functions
 name: radians2degresSexa
-title: function radians2degresSexa($r, $ptcardinal='', $dr=0)
+title: function radians2degresSexa(float $r, string $ptcardinal='', float $dr=0)
 doc: |
   Transformation d'une valeur en radians en une chaine en degres sexagesimaux
   si ptcardinal est fourni alors le retour respecte la notation avec point cardinal
   sinon c'est la notation signee qui est utilisee
   dr est la precision de r
 */
-function radians2degresSexa($r, $ptcardinal='', $dr=0) {
+function radians2degresSexa(float $r, string $ptcardinal='', float $dr=0) {
   $signe = '';
   if ($r < 0) {
     if ($ptcardinal) {
@@ -435,14 +435,14 @@ $refs = [
     'src'=> 'http://geodesie.ign.fr/fiches/pdf/7505601.pdf',
     'L93'=> [658557.548, 6860084.001],
     'LatLong'=> [48.839473, 2.435368],
-    'dms'=> ["48°50'22.1016''", "2°26'07.3236''"],
+    'dms'=> ["48°50'22.1016''N", "2°26'07.3236''E"],
     'WebMercator'=> [271103.889193, 6247667.030696],
     'UTM-31N'=> [458568.90, 5409764.67],
   ],
   'FORT-DE-FRANCE V (c)' =>[
     'src'=>'http://geodesie.ign.fr/fiches/pdf/9720905.pdf',
     'UTM'=> ['20N', 708544.10, 1616982.70],
-    'dms'=> ["14° 37' 05.3667''", "61° 03' 50.0647''" ],
+    'dms'=> ["14° 37' 05.3667''N", "61° 03' 50.0647''W" ],
   ],
   'SAINT-DENIS C (a)' =>[
     'src'=>'http://geodesie.ign.fr/fiches/pdf/97411C.pdf',
@@ -458,8 +458,8 @@ foreach ($refs as $name => $ref) {
     echo "geo ($clamb[0], $clamb[1], L93) ->";
     $cgeo = Lambert93::geo ($clamb[0], $clamb[1]);
     printf ("phi=%s / %s lambda=%s / %s\n",
-      radians2degresSexa($cgeo[1]/180*PI(),'N'), $ref['dms'][0],
-      radians2degresSexa($cgeo[0]/180*PI(),'E'), $ref['dms'][1]);
+      radians2degresSexa($cgeo[1]/180*PI(),'N', 1/180*PI()/60/60/10000), $ref['dms'][0],
+      radians2degresSexa($cgeo[0]/180*PI(),'E', 1/180*PI()/60/60/10000), $ref['dms'][1]);
     $cproj = Lambert93::proj($cgeo[0], $cgeo[1]);
     printf ("Verification du calcul inverse: %.2f / %.2f , %.2f / %.2f\n\n",
               $cproj[0], $clamb[0], $cproj[1], $clamb[1]);
@@ -476,8 +476,9 @@ foreach ($refs as $name => $ref) {
     printf ("Coordonnées en UTM-$zone: %.2f / %.2f, %.2f / %.2f\n", $cutm[0], $ref['UTM-31N'][0], $cutm[1], $ref['UTM-31N'][1]);
     $verif = $utm->geo($cutm[0], $cutm[1]);
     echo "Verification du calcul inverse:\n";
-    printf ("phi=%s / 48°50'22.1016'' lambda=%s / 2°26'07.3236''\n",
-      radians2degresSexa($verif[1]/180*PI(),'N'), radians2degresSexa($verif[0]/180*PI(),'E'));
+    printf ("phi=%s / %s lambda=%s / %s\n",
+      radians2degresSexa($verif[1]/180*PI(),'N', 1/180*PI()/60/60/10000), $ref['dms'][0],
+      radians2degresSexa($verif[0]/180*PI(),'E', 1/180*PI()/60/60/10000), $ref['dms'][1]);
   }
   elseif (isset($ref['UTM'])) {
     $utm = new UTM($ref['UTM'][0]);

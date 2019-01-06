@@ -6,6 +6,8 @@ doc: |
   Un arrondi peut être effectué au moyen de la méthode round() sur un Point/MultiPoint et filter() sur
   les autres primitives.
 journal: |
+  6/1/2019:
+    ajout de la classe Peano pour caluler les 4 Peano
   5/11/2018:
     ajout du test d'intersection entre polygones ou multi-polygones
   14/8/2018:
