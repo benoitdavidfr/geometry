@@ -186,7 +186,7 @@ title: static function geo($X, $Y)  - retourne [longitude, latitude] en degrés 
                  ))/PI()*180;
     return [ $longitude , $latitude ];
   }
- };
+};
   
 /*PhpDoc: classes
 name:  Class WebMercator extends CoordSys

@@ -3,9 +3,38 @@ path: /geometry
 doc: |
   Définition des primitives géométriques fondées sur OGC:WKT et GeoJSON
   + chgt de syst. de coordonnées uniquement sur IAG_GRS_1980
-  Un arrondi peut être effectué au moyen de la méthode round() sur un Point/MultiPoint et filter() sur
-  les autres primitives.
+  Un arrondi peut être effectué au moyen de la méthode round() sur un Point/MultiPoint et filter() sur les autres primitives.
+  
+  La bibliothèque gegeom redéfinit une partie des fonctionnalités.
+  Elle est plus simple du fait de ses choix de conception, permettant notamment plus de modularité.
+  
+  La hiérarchie des primitives géométriques de geometry est améliorée par rapport à celle de la bibiothèque geom2d.
+  Notamment chaque primitive GeoJSON est implémentée par une sous-classe de Geometry.
+  
+  Hiérarchie des classes définies:
+    - Geometry
+      +- Point
+      +- LineString
+      +- Polygon
+      +- GeometryCollection
+      +- MultiGeom - Liste de géométries élémentaires homogènes
+         +- MultiPoint
+         +- MultiLineString
+         +- MultiPolygon
+    - Segment
+    - BBox - Boite englobante
+    - Peano
+    - CoordSys
+      +- Lambert93
+      +- WebMercator
+      +- WorldMercator
+      +- UTM
+      
 journal: |
+  28/4/2019:
+    définition d'une bibiothèque autonome gegeom redéfinissant une partie des fonctionnalités de geometry
+  6/3/2019:
+    le fichier ~/html/gexplor/geomce/geojson.inc.php redéfinit une partie des fonctionnalités
   6/1/2019:
     ajout de la classe Peano pour caluler les 4 Peano
   5/11/2018:
@@ -42,4 +71,3 @@ phpIncludes:
   - /geometry/multipolygon.inc.php
   - /geometry/geomcoll.inc.php
   - /geometry/wkt2geojson.inc.php
-  - /geometry/wfs2geojson.inc.php
